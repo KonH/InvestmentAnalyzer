@@ -4,9 +4,11 @@ open System
 open System.IO
 open Importer.Common
 open Importer.AlphaDirect
+open Importer.Tinkoff
 
 type StateReportFormat =
     | AlphaDirectMyPortfolio
+    | TinkoffMyAssets
 
 type ImportResult = {
     Success: bool
@@ -29,4 +31,5 @@ let private convertToExporterResult (result: Result<DateTime * StateEntry list, 
 let LoadStateByFormat (stream: Stream, format: StateReportFormat) : ImportResult =
     match format with
     | AlphaDirectMyPortfolio -> alphaDirectImport stream
+    | TinkoffMyAssets -> tinkoffImport stream
     |> convertToExporterResult

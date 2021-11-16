@@ -9,12 +9,15 @@
         <Compile Include="Common.fs" />
         <Compile Include="Utils.fs" />
         <Compile Include="XmlUtils.fs" />
+        <Compile Include="PrdUtils.fs" />
         <Compile Include="AlphaDirect.fs" />
+        <Compile Include="Tinkoff.fs" />
         <Compile Include="StateImporter.fs" />
     </ItemGroup>
 
     <ItemGroup>
       <PackageReference Include="FsToolkit.ErrorHandling" Version="2.10.0" />
+      <PackageReference Include="itext7" Version="7.2.0" />
     </ItemGroup>
 
 </Project>
