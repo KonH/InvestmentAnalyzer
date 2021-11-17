@@ -1,4 +1,4 @@
-module Importer.Common
+module InvestmentAnalyzer.Importer.Common
 
 type StateEntry = {
     ISIN: string

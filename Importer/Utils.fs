@@ -1,8 +1,9 @@
-module private Importer.Utils
+module private InvestmentAnalyzer.Importer.Utils
 
 open System
 open System.Globalization
 open FsToolkit.ErrorHandling
+open Microsoft.FSharp.Reflection
 
 let getOptionString str =
     match str with
@@ -47,3 +48,8 @@ let getLastPartSeparatedBy (separator: string) (str: string) =
 let zipTuple (r: Result<'a, 'b> * Result<'c, 'b>) =
     let left, right = r
     Result.zip left right
+
+let unionFromString<'a> (s:string) =
+    match FSharpType.GetUnionCases typeof<'a> |> Array.filter (fun case -> case.Name = s) with
+    |[|case|] -> Some(FSharpValue.MakeUnion(case,[||]) :?> 'a)
+    |_ -> None

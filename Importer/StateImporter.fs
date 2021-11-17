@@ -1,10 +1,11 @@
-﻿module public Importer.StateImporter
+﻿module public InvestmentAnalyzer.Importer.StateImporter
 
 open System
 open System.IO
-open Importer.Common
-open Importer.AlphaDirect
-open Importer.Tinkoff
+open InvestmentAnalyzer.Importer.Common
+open InvestmentAnalyzer.Importer.Utils
+open InvestmentAnalyzer.Importer.AlphaDirect
+open InvestmentAnalyzer.Importer.Tinkoff
 
 type StateReportFormat =
     | AlphaDirectMyPortfolio
@@ -28,8 +29,10 @@ let private convertToExporterResult (result: Result<DateTime * StateEntry list, 
     | Ok (date, entries) -> ok date entries
     | Error e -> error e
 
-let LoadStateByFormat (stream: Stream, format: StateReportFormat) : ImportResult =
+let LoadStateByFormat (stream: Stream, formatStr: string) : ImportResult =
+    let format = unionFromString<StateReportFormat> formatStr
     match format with
-    | AlphaDirectMyPortfolio -> alphaDirectImport stream
-    | TinkoffMyAssets -> tinkoffImport stream
+    | Some AlphaDirectMyPortfolio -> alphaDirectImport stream
+    | Some TinkoffMyAssets -> tinkoffImport stream
+    | None -> Error [$"Unknown state format '{formatStr}'"]
     |> convertToExporterResult

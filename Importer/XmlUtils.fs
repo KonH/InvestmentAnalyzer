@@ -1,9 +1,9 @@
-module private Importer.XmlUtils
+module private InvestmentAnalyzer.Importer.XmlUtils
 
 open System
 open System.IO
 open System.Xml
-open Importer.Utils
+open InvestmentAnalyzer.Importer.Utils
 
 let loadXml (stream: Stream) =
     let doc = XmlDocument()

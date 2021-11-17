@@ -1,11 +1,11 @@
-module private Importer.Tinkoff
+module private InvestmentAnalyzer.Importer.Tinkoff
 
 open System
 open System.Text.RegularExpressions
 open FsToolkit.ErrorHandling
-open Importer.Common
-open Importer.Utils
-open Importer.PrdUtils
+open InvestmentAnalyzer.Importer.Common
+open InvestmentAnalyzer.Importer.Utils
+open InvestmentAnalyzer.Importer.PrdUtils
 
 type AssetType =
     | Bond

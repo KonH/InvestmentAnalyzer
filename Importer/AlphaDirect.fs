@@ -1,10 +1,10 @@
-module private Importer.AlphaDirect
+module private InvestmentAnalyzer.Importer.AlphaDirect
 
 open System.Xml
 open FsToolkit.ErrorHandling
-open Importer.Common
-open Importer.Utils
-open Importer.XmlUtils
+open InvestmentAnalyzer.Importer.Common
+open InvestmentAnalyzer.Importer.Utils
+open InvestmentAnalyzer.Importer.XmlUtils
 
 type AlphaDirectRawEntry = {
     activeNameStr: Option<string>
