@@ -3,6 +3,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Text.Json;
 using System.Threading.Tasks;
+using InvestmentAnalyzer.State.Persistant;
 
 namespace InvestmentAnalyzer.State {
 	public sealed class StateRepository {
