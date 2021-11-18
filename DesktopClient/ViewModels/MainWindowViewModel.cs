@@ -1,56 +1,59 @@
-﻿using System.Collections.ObjectModel;
-using System.Reactive;
+﻿using System;
+using System.Collections.ObjectModel;
 using System.Threading.Tasks;
-using DynamicData;
+using InvestmentAnalyzer.DesktopClient.Utils;
 using InvestmentAnalyzer.Importer;
 using InvestmentAnalyzer.State;
-using ReactiveUI;
+using Reactive.Bindings;
+using Reactive.Bindings.Extensions;
 
-namespace DesktopClient.ViewModels {
-	public class MainWindowViewModel : ViewModelBase {
+namespace InvestmentAnalyzer.DesktopClient.ViewModels {
+	public sealed class MainWindowViewModel : ViewModelBase {
+		public static readonly MainWindowViewModel DebugInstance = new();
+
 		public AppState State => _manager.State;
 
-		public string SelectedPath { get; set; } = string.Empty;
-
-		public BrokerState? SelectedBroker {
-			get => _selectedBroker;
-			set {
-				_selectedBroker = value;
-				SelectedBrokerStatePeriods.Clear();
-				if ( _selectedBroker != null ) {
-					SelectedBrokerStatePeriods.AddRange(_selectedBroker.Portfolio.Values);
-				}
-			}
-		}
+		public ReactiveProperty<BrokerState?> SelectedBroker { get; } = new();
 
 		public ObservableCollection<PortfolioState> SelectedBrokerStatePeriods { get; } = new();
 
-		public PortfolioState? SelectedStatePeriod {
-			get => _selectedStatePeriod;
-			set {
-				_selectedStatePeriod = value;
-				SelectedPeriodPortfolio.Clear();
-				if ( _selectedStatePeriod != null ) {
-					SelectedPeriodPortfolio.AddRange(_selectedStatePeriod.Entries);
-				}
-			}
-		}
+		public ReactiveProperty<PortfolioState?> SelectedStatePeriod { get; } = new();
 
 		public ObservableCollection<Common.StateEntry> SelectedPeriodPortfolio { get; } = new();
 
 		readonly StateManager _manager;
 
-		BrokerState? _selectedBroker;
-
-		PortfolioState? _selectedStatePeriod;
-
 		public MainWindowViewModel() {
 			var repository = new StateRepository();
 			_manager = new StateManager(repository);
+			_manager.State.Brokers
+				.ObserveAddChanged()
+				.Subscribe(b => {
+					SelectedBroker.Value ??= b;
+				});
+			SelectedBroker
+				.Subscribe(b => {
+					SelectedStatePeriod.Value = null;
+					SelectedBrokerStatePeriods.ReplaceWithRange(b?.Portfolio.Values);
+				});
+			SelectedBrokerStatePeriods
+				.ObserveAddChanged()
+				.Subscribe(p => {
+					SelectedStatePeriod.Value ??= p;
+				});
+			SelectedStatePeriod
+				.Subscribe(p => {
+					SelectedPeriodPortfolio.ReplaceWithRange(p?.Entries);
+				});
 		}
 
-		public async Task Initialize() {
-			await _manager.Initialize(SelectedPath);
-		}
+		public async Task LoadStartup() =>
+			await _manager.LoadStartup();
+
+		public async Task<bool> TryInitialize() =>
+			await _manager.TryInitialize();
+
+		public async Task<bool> InitializeWithPath(string path, bool allowCreate) =>
+			await _manager.Initialize(path, allowCreate);
 	}
 }

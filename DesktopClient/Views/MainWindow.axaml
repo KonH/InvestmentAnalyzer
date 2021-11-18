@@ -1,18 +1,19 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:vm="using:DesktopClient.ViewModels"
+        xmlns:vm="using:InvestmentAnalyzer.DesktopClient.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-        x:Class="DesktopClient.Views.MainWindow"
-        Title="DesktopClient" Initialized="OnInitialized">
+        d:DataContext="{x:Static vm:MainWindowViewModel.DebugInstance}"
+        x:Class="InvestmentAnalyzer.DesktopClient.Views.MainWindow"
+        Title="DesktopClient" Activated="OnActivated">
 
     <Design.DataContext>
         <vm:MainWindowViewModel/>
     </Design.DataContext>
 
-    <DockPanel>
-        <ComboBox Items="{Binding State.Brokers}" SelectedItem="{Binding SelectedBroker}">
+    <StackPanel>
+        <ComboBox Items="{Binding State.Brokers}" SelectedItem="{Binding SelectedBroker.Value}">
             <ComboBox.ItemTemplate>
                 <DataTemplate>
                     <TextBlock Text="{Binding Name}"></TextBlock>
@@ -20,7 +21,7 @@
             </ComboBox.ItemTemplate>
         </ComboBox>
 
-        <ComboBox Items="{Binding SelectedBrokerStatePeriods}" SelectedItem="{Binding SelectedStatePeriod}">
+        <ComboBox Items="{Binding SelectedBrokerStatePeriods}" SelectedItem="{Binding SelectedStatePeriod.Value}">
             <ComboBox.ItemTemplate>
                 <DataTemplate>
                     <TextBlock Text="{Binding Date}"></TextBlock>
@@ -30,6 +31,6 @@
 
         <DataGrid Items="{Binding SelectedPeriodPortfolio}" AutoGenerateColumns="True">
         </DataGrid>
-    </DockPanel>
+    </StackPanel>
 
 </Window>

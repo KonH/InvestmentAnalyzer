@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
@@ -14,33 +15,44 @@ namespace InvestmentAnalyzer.State {
 
 		readonly StateRepository _repository;
 
+		AppStartup? _startup;
 		AppManifest? _manifest;
 
 		public StateManager(StateRepository repository) {
 			_repository = repository;
 		}
 
-		public async Task Initialize(string filePath) {
+		public async Task<bool> TryInitialize() {
+			AssertStartup();
+			return await Initialize(_startup.FilePath, false);
+		}
+
+		public async Task<bool> Initialize(string filePath, bool allowCreate) {
+			AssertStartup();
+			_startup.FilePath = filePath;
 			_repository.FilePath = filePath;
-			await Load();
+			try {
+				await LoadManifest(allowCreate);
+			} catch ( Exception e ) {
+				Debug.Write(e);
+				return false;
+			}
 			AssertManifest();
 			State.Brokers.Clear();
 			var newBrokers = _manifest.Brokers
 				.Select(b => new BrokerState(
 					b.Key,
 					b.Value.StateFormat,
-					new Dictionary<DateOnly, PortfolioState>()));
+					new Dictionary<DateOnly, PortfolioState>()))
+				.ToArray();
 			foreach ( var broker in newBrokers ) {
-				State.Brokers.Add(broker);
-			}
-			foreach ( var broker in State.Brokers ) {
 				broker.Portfolio.Clear();
 				var reports = await LoadReports(broker.Name);
 				foreach ( var (reportName, stream) in reports ) {
 					var result = StateImporter.LoadStateByFormat(stream, broker.StateFormat);
 					if ( !result.Success ) {
-						throw new InvalidOperationException(
-							$"Failed to load report '{reportName}': {string.Join("\n", result.Errors)}");
+						Debug.Write($"Failed to load report '{reportName}': {string.Join("\n", result.Errors)}");
+						return false;
 					}
 					var dateOnly = DateOnly.FromDateTime(result.Date);
 					var entries = result.Entries.ToList();
@@ -48,14 +60,31 @@ namespace InvestmentAnalyzer.State {
 					broker.Portfolio.Add(dateOnly, portfolioState);
 				}
 			}
-			await Save();
+			foreach ( var broker in newBrokers ) {
+				State.Brokers.Add(broker);
+			}
+			await SaveManifest();
+			await SaveStartup();
+			return true;
 		}
 
-		async Task Load() {
+		public async Task LoadStartup() {
+			_startup = await _repository.LoadOrCreateStartup();
+		}
+
+		async Task SaveStartup() {
+			AssertStartup();
+			await _repository.SaveStartup(_startup);
+		}
+
+		async Task LoadManifest(bool allowCreate) {
+			if ( allowCreate ) {
+				_repository.TryCreateState();
+			}
 			_manifest = await _repository.LoadOrCreateManifest();
 		}
 
-		async Task Save() {
+		async Task SaveManifest() {
 			AssertManifest();
 			await _repository.SaveManifest(_manifest);
 		}
@@ -77,6 +106,13 @@ namespace InvestmentAnalyzer.State {
 
 		async Task<Stream?> TryLoadReport(string reportFilePath) =>
 			await _repository.TryLoadAsMemoryStream(reportFilePath);
+
+		[MemberNotNull(nameof(_startup))]
+		void AssertStartup() {
+			if ( _startup == null ) {
+				throw new InvalidOperationException("No startup previously loaded");
+			}
+		}
 
 		[MemberNotNull(nameof(_manifest))]
 		void AssertManifest() {

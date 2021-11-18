@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using ReactiveUI;
+﻿using ReactiveUI;
 
-namespace DesktopClient.ViewModels {
+namespace InvestmentAnalyzer.DesktopClient.ViewModels {
 	public class ViewModelBase : ReactiveObject {}
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Text.Json;
@@ -11,8 +12,34 @@ namespace InvestmentAnalyzer.State {
 
 		string ManifestFileName = "state.json";
 
+		string StartupPath =>
+			Path.Combine(Path.GetDirectoryName(Process.GetCurrentProcess().MainModule?.FileName) ?? string.Empty, "DesktopClient.Startup.json");
+
+		public void TryCreateState() {
+			if ( File.Exists(FilePath) ) {
+				return;
+			}
+			var archive = LoadOrCreateArchive();
+			archive.Dispose();
+		}
+
+		public async Task<AppStartup> LoadOrCreateStartup() {
+			var path = StartupPath;
+			if ( !File.Exists(path) ) {
+				return new AppStartup();
+			}
+			await using var stream = File.Open(path, FileMode.Open);
+			return await JsonSerializer.DeserializeAsync<AppStartup>(stream) ?? new AppStartup();
+		}
+
+		public async Task SaveStartup(AppStartup startup) {
+			await using var stream = File.Open(StartupPath, FileMode.OpenOrCreate, FileAccess.ReadWrite);
+			stream.SetLength(0);
+			await JsonSerializer.SerializeAsync(stream, startup);
+		}
+
 		public async Task<AppManifest> LoadOrCreateManifest() {
-			using var zipArchive = LoadOrCreateArchive();
+			using var zipArchive = LoadArchive();
 			var stateEntry = zipArchive.GetEntry(ManifestFileName);
 			if ( stateEntry == null ) {
 				return new AppManifest();
@@ -23,7 +50,7 @@ namespace InvestmentAnalyzer.State {
 		}
 
 		public async Task SaveManifest(AppManifest manifest) {
-			using var zipArchive = LoadOrCreateArchive();
+			using var zipArchive = LoadArchive();
 			var stateEntry = zipArchive.GetEntry(ManifestFileName) ?? zipArchive.CreateEntry(ManifestFileName);
 			await using var manifestStream = stateEntry.Open();
 			manifestStream.SetLength(0);
@@ -31,7 +58,7 @@ namespace InvestmentAnalyzer.State {
 		}
 
 		public async Task<Stream?> TryLoadAsMemoryStream(string entryName) {
-			using var zipArchive = LoadOrCreateArchive();
+			using var zipArchive = LoadArchive();
 			var entry = zipArchive.GetEntry(entryName);
 			if ( entry == null ) {
 				return null;
@@ -41,6 +68,13 @@ namespace InvestmentAnalyzer.State {
 			await sourceStream.CopyToAsync(memoryStream);
 			memoryStream.Position = 0;
 			return memoryStream;
+		}
+
+		ZipArchive LoadArchive() {
+			if ( !File.Exists(FilePath) ) {
+				throw new FileNotFoundException($"File not found at '{FilePath}'");
+			}
+			return LoadOrCreateArchive();
 		}
 
 		ZipArchive LoadOrCreateArchive() {
