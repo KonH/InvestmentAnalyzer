@@ -72,6 +72,42 @@ namespace InvestmentAnalyzer.State {
 			_startup = await _repository.LoadOrCreateStartup();
 		}
 
+		public async Task RemovePortfolioPeriod(string brokerName, DateOnly portfolioPeriod) {
+			AssertManifest();
+			var brokerState = State.Brokers.FirstOrDefault(b => b.Name == brokerName);
+			if ( brokerState == null ) {
+				return;
+			}
+			if ( !brokerState.Portfolio.TryGetValue(portfolioPeriod, out var period) ) {
+				return;
+			}
+			var reportName = period.ReportName;
+			if ( !_manifest.Brokers.TryGetValue(brokerName, out var brokerManifest) ) {
+				return;
+			}
+			if ( !brokerManifest.Reports.TryGetValue(reportName, out var reportPath) ) {
+				return;
+			}
+			brokerState.Portfolio.Remove(portfolioPeriod);
+			brokerManifest.Reports.Remove(reportName);
+			_repository.DeleteEntry(reportPath);
+			await SaveManifest();
+		}
+
+		public async Task RemoveBroker(string brokerName) {
+			AssertManifest();
+			var brokerState = State.Brokers.FirstOrDefault(b => b.Name == brokerName);
+			if ( brokerState == null ) {
+				return;
+			}
+			foreach ( var (period, _) in brokerState.Portfolio ) {
+				await RemovePortfolioPeriod(brokerName, period);
+			}
+			State.Brokers.Remove(brokerState);
+			_manifest.Brokers.Remove(brokerName);
+			await SaveManifest();
+		}
+
 		async Task SaveStartup() {
 			AssertStartup();
 			await _repository.SaveStartup(_startup);

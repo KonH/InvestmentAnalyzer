@@ -12,22 +12,32 @@
         <vm:MainWindowViewModel/>
     </Design.DataContext>
 
-    <StackPanel>
-        <ComboBox Items="{Binding State.Brokers}" SelectedItem="{Binding SelectedBroker.Value}">
-            <ComboBox.ItemTemplate>
-                <DataTemplate>
-                    <TextBlock Text="{Binding Name}"></TextBlock>
-                </DataTemplate>
-            </ComboBox.ItemTemplate>
-        </ComboBox>
+    <StackPanel Spacing="5" Margin="10">
+        <StackPanel Orientation="Horizontal" Spacing="5">
+            <ComboBox Items="{Binding State.Brokers}" SelectedItem="{Binding SelectedBroker.Value}">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Name}"></TextBlock>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+            <Button Command="{Binding RemoveSelectedBroker}">
+                -
+            </Button>
+        </StackPanel>
 
-        <ComboBox Items="{Binding SelectedBrokerStatePeriods}" SelectedItem="{Binding SelectedStatePeriod.Value}">
-            <ComboBox.ItemTemplate>
-                <DataTemplate>
-                    <TextBlock Text="{Binding Date}"></TextBlock>
-                </DataTemplate>
-            </ComboBox.ItemTemplate>
-        </ComboBox>
+        <StackPanel Orientation="Horizontal" Spacing="5">
+            <ComboBox Items="{Binding SelectedBrokerStatePeriods}" SelectedItem="{Binding SelectedStatePeriod.Value}">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Date}"></TextBlock>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+            <Button Command="{Binding RemoveSelectedState}">
+                -
+            </Button>
+        </StackPanel>
 
         <DataGrid Items="{Binding SelectedPeriodPortfolio}" AutoGenerateColumns="True">
         </DataGrid>

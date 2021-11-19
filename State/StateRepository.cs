@@ -70,6 +70,12 @@ namespace InvestmentAnalyzer.State {
 			return memoryStream;
 		}
 
+		public void DeleteEntry(string entryName) {
+			using var zipArchive = LoadArchive();
+			var entry = zipArchive.GetEntry(entryName);
+			entry?.Delete();
+		}
+
 		ZipArchive LoadArchive() {
 			if ( !File.Exists(FilePath) ) {
 				throw new FileNotFoundException($"File not found at '{FilePath}'");

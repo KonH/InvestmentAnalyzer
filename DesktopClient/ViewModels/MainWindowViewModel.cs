@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.Linq;
+using System.Reactive.Linq;
 using System.Threading.Tasks;
 using InvestmentAnalyzer.DesktopClient.Utils;
 using InvestmentAnalyzer.Importer;
@@ -21,6 +23,9 @@ namespace InvestmentAnalyzer.DesktopClient.ViewModels {
 
 		public ObservableCollection<Common.StateEntry> SelectedPeriodPortfolio { get; } = new();
 
+		public ReactiveCommand RemoveSelectedBroker { get; }
+		public ReactiveCommand RemoveSelectedState { get; }
+
 		readonly StateManager _manager;
 
 		public MainWindowViewModel() {
@@ -30,6 +35,13 @@ namespace InvestmentAnalyzer.DesktopClient.ViewModels {
 				.ObserveAddChanged()
 				.Subscribe(b => {
 					SelectedBroker.Value ??= b;
+				});
+			_manager.State.Brokers
+				.ObserveRemoveChanged()
+				.Subscribe(b => {
+					if ( SelectedBroker.Value == b ) {
+						SelectedBroker.Value = _manager.State.Brokers.FirstOrDefault();
+					}
 				});
 			SelectedBroker
 				.Subscribe(b => {
@@ -41,10 +53,37 @@ namespace InvestmentAnalyzer.DesktopClient.ViewModels {
 				.Subscribe(p => {
 					SelectedStatePeriod.Value ??= p;
 				});
+			SelectedBrokerStatePeriods
+				.ObserveRemoveChanged()
+				.Subscribe(p => {
+					if ( SelectedStatePeriod.Value == p ) {
+						SelectedStatePeriod.Value = SelectedBrokerStatePeriods.FirstOrDefault();
+					}
+				});
 			SelectedStatePeriod
 				.Subscribe(p => {
 					SelectedPeriodPortfolio.ReplaceWithRange(p?.Entries);
 				});
+			RemoveSelectedBroker = new ReactiveCommand(SelectedBroker.Select(b => b != null));
+			RemoveSelectedBroker
+				.Select(async _ => {
+					var broker = SelectedBroker.Value;
+					if ( broker == null ) {
+						return;
+					}
+					await _manager.RemoveBroker(broker.Name);
+				}).Subscribe();
+			RemoveSelectedState = new ReactiveCommand(SelectedStatePeriod.Select(p => p != null));
+			RemoveSelectedState
+				.Select(async _ => {
+					var broker = SelectedBroker.Value;
+					var period = SelectedStatePeriod.Value;
+					if ( (broker == null) || (period == null) ) {
+						return;
+					}
+					await _manager.RemovePortfolioPeriod(broker.Name, period.Date);
+					SelectedBrokerStatePeriods.Remove(period);
+				}).Subscribe();
 		}
 
 		public async Task LoadStartup() =>
