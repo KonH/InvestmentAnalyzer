@@ -51,8 +51,8 @@ namespace InvestmentAnalyzer.State {
 				foreach ( var (reportName, stream) in reports ) {
 					var result = StateImporter.LoadStateByFormat(stream, broker.StateFormat);
 					if ( !result.Success ) {
-						Debug.Write($"Failed to load report '{reportName}': {string.Join("\n", result.Errors)}");
-						return false;
+						Console.WriteLine($"Failed to load report '{reportName}': {string.Join("\n", result.Errors)}");
+						continue;
 					}
 					var dateOnly = DateOnly.FromDateTime(result.Date);
 					var entries = result.Entries.ToList();
