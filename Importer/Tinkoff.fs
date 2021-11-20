@@ -23,9 +23,24 @@ let extractSection (lines: string list) (firstHeader: string) (lastHeader: strin
     |> Seq.takeWhile (fun str -> str.Contains(lastHeader) = false)
     |> List.ofSeq
 
+let compactLines (lines: string[] list) =
+    let mutable result = []
+    let mutable shouldAppendPrevLine = false
+    for i in 0..lines.Length - 1 do
+        let currentLine = lines.[i]
+        match not shouldAppendPrevLine && currentLine.Length <= 3 with
+        | true ->
+            shouldAppendPrevLine <- true
+        | false ->
+            let lineToAdd = if shouldAppendPrevLine then Array.concat [lines.[i - 1]; currentLine] else currentLine
+            result <- lineToAdd :: result
+            shouldAppendPrevLine <- false
+    result |> List.rev
+
 let loadAssetLines lines =
     extractSection lines "2. Ценные бумаги" "3. Производные финансовые инструменты" 4
     |> List.map (fun str -> str.Split('\t'))
+    |> compactLines
 
 let reorderByIsin (lines: string list) =
     let isinRegex = Regex("([A-Z]{2})((?![A-Z]{10}\b)[A-Z0-9]{10})")
