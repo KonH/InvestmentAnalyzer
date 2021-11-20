@@ -24,6 +24,9 @@
             <Button Command="{Binding RemoveSelectedBroker}">
                 -
             </Button>
+            <Button Command="{Binding AddBroker}">
+                +
+            </Button>
         </StackPanel>
 
         <StackPanel Orientation="Horizontal" Spacing="5">
@@ -36,6 +39,9 @@
             </ComboBox>
             <Button Command="{Binding RemoveSelectedState}">
                 -
+            </Button>
+            <Button Command="{Binding ImportState}">
+                +
             </Button>
         </StackPanel>
 

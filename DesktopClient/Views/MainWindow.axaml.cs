@@ -1,6 +1,5 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Reactive;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
@@ -8,9 +7,11 @@ using Avalonia.Markup.Xaml;
 using Avalonia.ReactiveUI;
 using DesktopClient.Views;
 using InvestmentAnalyzer.DesktopClient.ViewModels;
+using InvestmentAnalyzer.State;
+using ReactiveUI;
 
 namespace InvestmentAnalyzer.DesktopClient.Views {
-	public partial class MainWindow : ReactiveWindow<MainWindow> {
+	public partial class MainWindow : ReactiveWindow<MainWindowViewModel> {
 		bool _isAlreadyActivated = false;
 
 		public MainWindow() {
@@ -24,7 +25,7 @@ namespace InvestmentAnalyzer.DesktopClient.Views {
 			AvaloniaXamlLoader.Load(this);
 		}
 
-		async Task RunInitializationFlow() {
+		async void OnActivated(object? sender, EventArgs e) {
 			if ( _isAlreadyActivated ) {
 				return;
 			}
@@ -32,40 +33,48 @@ namespace InvestmentAnalyzer.DesktopClient.Views {
 			if ( DataContext is not MainWindowViewModel viewModel ) {
 				return;
 			}
-			await viewModel.LoadStartup();
-			var isInitializedWithDefaults = await viewModel.TryInitialize();
-			if ( isInitializedWithDefaults ) {
-				return;
+			viewModel.ShowOpenFileDialog.RegisterHandler(ShowOpenFileDialog);
+			viewModel.ShowSaveFileDialog.RegisterHandler(ShowSaveFileDialog);
+			viewModel.ShowChooseStateDialog.RegisterHandler(ShowChooseStateDialog);
+			viewModel.CloseWindow.RegisterHandler(CloseWindow);
+			viewModel.ShowAddBrokerWindow.RegisterHandler(ShowAddBrokerWindow);
+			await viewModel.Initialize();
+		}
+
+		async Task ShowOpenFileDialog(InteractionContext<OpenFileDialogOptions, string[]> interaction) {
+			var input = interaction.Input;
+			var dialog = new OpenFileDialog {
+				AllowMultiple = input.AllowMultiple
+			};
+			if ( input.Filter != null ) {
+				dialog.Filters.Add(input.Filter);
 			}
+			var fileNames = await dialog.ShowAsync(this);
+			interaction.SetOutput(fileNames ?? Array.Empty<string>());
+		}
+
+		async Task ShowSaveFileDialog(InteractionContext<Unit, string> interaction) {
+			var dialog = new SaveFileDialog();
+			var fileName = await dialog.ShowAsync(this);
+			interaction.SetOutput(fileName ?? string.Empty);
+		}
+
+		async Task ShowChooseStateDialog(InteractionContext<Unit, bool> interaction) {
 			var chooseDialog = new StateChooseWindow();
 			var shouldCreate = await chooseDialog.ShowDialog<bool>(this);
-			if ( shouldCreate ) {
-				var saveFileDialog = new SaveFileDialog {
-					DefaultExtension = "zip"
-				};
-				var result = await saveFileDialog.ShowAsync(this);
-				var path = result ?? string.Empty;
-				var isInitialized = await viewModel.InitializeWithPath(path, true);
-				if ( isInitialized ) {
-					return;
-				}
-			} else {
-				var openFileDialog = new OpenFileDialog {
-					AllowMultiple = false
-				};
-				openFileDialog.Filters.Add(new FileDialogFilter { Extensions = new List<string> { "zip" } });
-				var result = await openFileDialog.ShowAsync(this);
-				var path = result?.First() ?? string.Empty;
-				var isInitialized = await viewModel.InitializeWithPath(path, false);
-				if ( isInitialized ) {
-					return;
-				}
-			}
+			interaction.SetOutput(shouldCreate);
+		}
+
+		void CloseWindow(InteractionContext<Unit, Unit> interaction) {
 			Close();
 		}
 
-		async void OnActivated(object? sender, EventArgs e) {
-			await RunInitializationFlow();
+		async Task ShowAddBrokerWindow(InteractionContext<Unit, BrokerState?> interaction) {
+			var addBrokerDialog = new AddBrokerWindow {
+				ViewModel = new AddBrokerWindowViewModel()
+			};
+			var result = await addBrokerDialog.ShowDialog<BrokerState?>(this);
+			interaction.SetOutput(result);
 		}
 	}
 }

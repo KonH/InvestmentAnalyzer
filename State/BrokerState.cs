@@ -1,6 +1,5 @@
-using System;
-using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace InvestmentAnalyzer.State {
-	public record BrokerState(string Name, string StateFormat, Dictionary<DateOnly, PortfolioState> Portfolio);
+	public record BrokerState(string Name, string StateFormat, ObservableCollection<PortfolioState> Portfolio);
 }

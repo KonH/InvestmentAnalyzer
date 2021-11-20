@@ -70,6 +70,14 @@ namespace InvestmentAnalyzer.State {
 			return memoryStream;
 		}
 
+		public async Task AddEntry(string sourcePath, string entryName) {
+			await using var sourceStream = File.OpenRead(sourcePath);
+			using var zipArchive = LoadArchive();
+			var entry = zipArchive.CreateEntry(entryName);
+			await using var targetStream = entry.Open();
+			await sourceStream.CopyToAsync(targetStream);
+		}
+
 		public void DeleteEntry(string entryName) {
 			using var zipArchive = LoadArchive();
 			var entry = zipArchive.GetEntry(entryName);
