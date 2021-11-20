@@ -29,10 +29,16 @@ let private convertToExporterResult (result: Result<DateTime * StateEntry list, 
     | Ok (date, entries) -> ok date entries
     | Error e -> error e
 
+let private exceptionToResult func =
+    try
+       func()
+    with e ->
+       Error [e.ToString()]
+
 let LoadStateByFormat (stream: Stream, formatStr: string) : ImportResult =
     let format = unionFromString<StateReportFormat> formatStr
     match format with
-    | Some AlphaDirectMyPortfolio -> alphaDirectImport stream
-    | Some TinkoffMyAssets -> tinkoffImport stream
+    | Some AlphaDirectMyPortfolio -> exceptionToResult (fun () -> alphaDirectImport stream)
+    | Some TinkoffMyAssets -> exceptionToResult (fun () -> tinkoffImport stream)
     | None -> Error [$"Unknown state format '{formatStr}'"]
     |> convertToExporterResult
