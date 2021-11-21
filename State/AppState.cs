@@ -1,5 +1,8 @@
-using System.Collections.ObjectModel;
+using DynamicData;
 
 namespace InvestmentAnalyzer.State {
-	public record AppState(ObservableCollection<BrokerState> Brokers);
+	public record AppState(
+		SourceList<BrokerState> Brokers,
+		SourceList<PortfolioState> Portfolio,
+		SourceList<PortfolioStateEntry> Entries);
 }

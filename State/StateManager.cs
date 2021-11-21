@@ -1,17 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using DynamicData;
 using InvestmentAnalyzer.Importer;
 using InvestmentAnalyzer.State.Persistant;
 
 namespace InvestmentAnalyzer.State {
 	public sealed class StateManager {
-		public AppState State { get; } = new(new ObservableCollection<BrokerState>());
+		public const string AggregationBrokerMarker = "All";
+
+		public AppState State { get; } = new(
+			new SourceList<BrokerState>(),
+			new SourceList<PortfolioState>(),
+			new SourceList<PortfolioStateEntry>());
 
 		readonly StateRepository _repository;
 
@@ -41,17 +46,16 @@ namespace InvestmentAnalyzer.State {
 			State.Brokers.Clear();
 			var newBrokers = _manifest.Brokers
 				.Select(b => new BrokerState(
-					b.Key,
-					b.Value.StateFormat,
-					new ObservableCollection<PortfolioState>()))
+					b.Name,
+					b.StateFormat))
 				.ToArray();
 			foreach ( var broker in newBrokers ) {
-				broker.Portfolio.Clear();
 				var reports = await LoadReports(broker.Name);
 				foreach ( var (reportName, stream) in reports ) {
 					TryImportReport(broker, reportName, stream);
 				}
 			}
+			State.Brokers.Add(new BrokerState(AggregationBrokerMarker, string.Empty));
 			foreach ( var broker in newBrokers ) {
 				State.Brokers.Add(broker);
 			}
@@ -67,7 +71,8 @@ namespace InvestmentAnalyzer.State {
 		public async Task AddBroker(BrokerState broker) {
 			State.Brokers.Add(broker);
 			AssertManifest();
-			_manifest.Brokers.Add(broker.Name, new BrokerManifest {
+			_manifest.Brokers.Add(new BrokerManifest {
+				Name = broker.Name,
 				Reports = new Dictionary<string, string>(),
 				StateFormat = broker.StateFormat
 			});
@@ -75,26 +80,34 @@ namespace InvestmentAnalyzer.State {
 		}
 
 		public async Task RemoveBroker(string brokerName) {
-			var brokerState = State.Brokers.FirstOrDefault(b => b.Name == brokerName);
+			var brokerPortfolio = State.Portfolio.Items
+				.Where(p => p.BrokerName == brokerName);
+			foreach ( var period in brokerPortfolio ) {
+				await RemovePortfolioPeriod(brokerName, period.Date);
+			}
+			var brokerState = State.Brokers.Items
+				.FirstOrDefault(b => b.Name == brokerName);
 			if ( brokerState == null ) {
 				return;
 			}
-			foreach ( var period in brokerState.Portfolio ) {
-				await RemovePortfolioPeriod(brokerName, period);
-			}
 			State.Brokers.Remove(brokerState);
 			AssertManifest();
-			_manifest.Brokers.Remove(brokerName);
+			var brokerManifest = _manifest.Brokers.FirstOrDefault(b => b.Name == brokerName);
+			if ( brokerManifest != null ) {
+				_manifest.Brokers.Remove(brokerManifest);
+			}
 			await SaveManifest();
 		}
 
 		public async Task ImportPortfolioPeriods(string brokerName, string[] paths) {
-			var brokerState = State.Brokers.FirstOrDefault(b => b.Name == brokerName);
+			var brokerState = State.Brokers.Items
+				.FirstOrDefault(b => b.Name == brokerName);
 			if ( brokerState == null ) {
 				return;
 			}
 			AssertManifest();
-			if ( !_manifest.Brokers.TryGetValue(brokerName, out var brokerManifest) ) {
+			var brokerManifest = _manifest.Brokers.FirstOrDefault(b => b.Name == brokerName);
+			if ( brokerManifest == null ) {
 				return;
 			}
 			foreach ( var path in paths ) {
@@ -111,20 +124,27 @@ namespace InvestmentAnalyzer.State {
 			}
 		}
 
-		public async Task RemovePortfolioPeriod(string brokerName, PortfolioState period) {
-			var brokerState = State.Brokers.FirstOrDefault(b => b.Name == brokerName);
+		public async Task RemovePortfolioPeriod(string brokerName, DateOnly period) {
+			var brokerState = State.Brokers.Items
+				.FirstOrDefault(b => b.Name == brokerName);
 			if ( brokerState == null ) {
 				return;
 			}
 			AssertManifest();
-			var reportName = period.ReportName;
-			if ( !_manifest.Brokers.TryGetValue(brokerName, out var brokerManifest) ) {
+			var portfolioPeriod = State.Portfolio.Items
+				.FirstOrDefault(p => (p.BrokerName == brokerName) && (p.Date == period));
+			if ( portfolioPeriod == null ) {
+				return;
+			}
+			var reportName = portfolioPeriod.ReportName;
+			var brokerManifest = _manifest.Brokers.FirstOrDefault(b => b.Name == brokerName);
+			if ( brokerManifest == null ) {
 				return;
 			}
 			if ( !brokerManifest.Reports.TryGetValue(reportName, out var reportPath) ) {
 				return;
 			}
-			brokerState.Portfolio.Remove(period);
+			State.Portfolio.Remove(portfolioPeriod);
 			brokerManifest.Reports.Remove(reportName);
 			_repository.DeleteEntry(reportPath);
 			await SaveManifest();
@@ -138,9 +158,15 @@ namespace InvestmentAnalyzer.State {
 				return false;
 			}
 			var dateOnly = DateOnly.FromDateTime(result.Date);
-			var entries = result.Entries.ToList();
-			var portfolioState = new PortfolioState(dateOnly, reportName, entries);
-			broker.Portfolio.Add(portfolioState);
+			var entries = result.Entries
+				.Select(e => new PortfolioStateEntry(
+					dateOnly, broker.Name, e.ISIN, e.Name, e.Currency, e.Count, e.TotalPrice, e.PricePerUnit))
+				.ToList();
+			foreach ( var e in entries ) {
+				State.Entries.Add(e);
+			}
+			var portfolioState = new PortfolioState(broker.Name, dateOnly, reportName);
+			State.Portfolio.Add(portfolioState);
 			Console.WriteLine($"Import state '{reportName}' for broker '{broker.Name}' finished");
 			return true;
 		}
@@ -164,11 +190,11 @@ namespace InvestmentAnalyzer.State {
 
 		async Task<IReadOnlyDictionary<string, Stream?>> LoadReports(string brokerName) {
 			AssertManifest();
-			var targetBroker = _manifest.Brokers.GetValueOrDefault(brokerName);
-			if ( targetBroker == null ) {
+			var brokerManifest = _manifest.Brokers.FirstOrDefault(b => b.Name == brokerName);
+			if ( brokerManifest == null ) {
 				return new Dictionary<string, Stream?>();
 			}
-			var tasks = targetBroker.Reports
+			var tasks = brokerManifest.Reports
 				.ToDictionary(
 					p => p.Key,
 					p => TryLoadReport(p.Value));

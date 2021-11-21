@@ -6,27 +6,24 @@ using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls;
-using InvestmentAnalyzer.DesktopClient.Utils;
-using InvestmentAnalyzer.Importer;
+using DynamicData;
+using DynamicData.Binding;
 using InvestmentAnalyzer.State;
 using Reactive.Bindings;
-using Reactive.Bindings.Extensions;
 using ReactiveUI;
 using ReactiveCommand = Reactive.Bindings.ReactiveCommand;
 
 namespace InvestmentAnalyzer.DesktopClient.ViewModels {
 	public sealed class MainWindowViewModel : ViewModelBase {
-		public static readonly MainWindowViewModel DebugInstance = new();
+		public ReactiveProperty<string?> SelectedBroker { get; } = new();
 
-		public AppState State => _manager.State;
+		public ReadOnlyObservableCollection<string> AvailableBrokers => _availableBrokers;
 
-		public ReactiveProperty<BrokerState?> SelectedBroker { get; } = new();
+		public ReadOnlyObservableCollection<DateOnly> SelectedBrokerStatePeriods => _selectedBrokerStatePeriods;
 
-		public ObservableCollection<PortfolioState> SelectedBrokerStatePeriods { get; } = new();
+		public ReadOnlyObservableCollection<PortfolioStateEntry> SelectedPeriodPortfolio => _selectedPeriodPortfolio;
 
-		public ReactiveProperty<PortfolioState?> SelectedStatePeriod { get; } = new();
-
-		public ObservableCollection<Common.StateEntry> SelectedPeriodPortfolio { get; } = new();
+		public ReactiveProperty<DateOnly?> SelectedStatePeriod { get; } = new();
 
 		public Interaction<OpenFileDialogOptions, string[]> ShowOpenFileDialog { get; } = new();
 		public Interaction<Unit, string> ShowSaveFileDialog { get; } = new();
@@ -41,52 +38,37 @@ namespace InvestmentAnalyzer.DesktopClient.ViewModels {
 
 		readonly StateManager _manager;
 
+		readonly ReadOnlyObservableCollection<string> _availableBrokers;
+		readonly ReadOnlyObservableCollection<DateOnly> _selectedBrokerStatePeriods;
+		readonly ReadOnlyObservableCollection<PortfolioStateEntry> _selectedPeriodPortfolio;
+
 		public MainWindowViewModel() {
 			var repository = new StateRepository();
 			_manager = new StateManager(repository);
 			_manager.State.Brokers
-				.ObserveAddChanged()
-				.Subscribe(b => {
-					b.Portfolio
-						.ObserveAddChanged()
-						.Where(_ => SelectedBroker.Value == b)
-						.Do(p => SelectedBrokerStatePeriods.Add(p))
-						.Subscribe();
-					b.Portfolio
-						.ObserveRemoveChanged()
-						.Where(_ => SelectedBroker.Value == b)
-						.Do(p => SelectedBrokerStatePeriods.Remove(p))
-						.Subscribe();
-					SelectedBroker.Value ??= b;
-				});
-			_manager.State.Brokers
-				.ObserveRemoveChanged()
-				.Subscribe(b => {
-					if ( SelectedBroker.Value == b ) {
-						SelectedBroker.Value = _manager.State.Brokers.FirstOrDefault();
-					}
-				});
-			SelectedBroker
-				.Subscribe(b => {
-					SelectedStatePeriod.Value = null;
-					SelectedBrokerStatePeriods.ReplaceWithRange(b?.Portfolio);
-				});
-			SelectedBrokerStatePeriods
-				.ObserveAddChanged()
-				.Subscribe(p => {
-					SelectedStatePeriod.Value ??= p;
-				});
-			SelectedBrokerStatePeriods
-				.ObserveRemoveChanged()
-				.Subscribe(p => {
-					if ( SelectedStatePeriod.Value == p ) {
-						SelectedStatePeriod.Value = SelectedBrokerStatePeriods.FirstOrDefault();
-					}
-				});
-			SelectedStatePeriod
-				.Subscribe(p => {
-					SelectedPeriodPortfolio.ReplaceWithRange(p?.Entries);
-				});
+				.Connect()
+				.Transform(b => b.Name)
+				.Bind(out _availableBrokers)
+				.Subscribe();
+			Func<PortfolioState, bool> MakeBrokerNameFilterForState(string? brokerName) =>
+				p => (p.BrokerName == brokerName) || (brokerName == StateManager.AggregationBrokerMarker);
+			_manager.State.Portfolio
+				.Connect()
+				.Filter(SelectedBroker.Select(MakeBrokerNameFilterForState))
+				.Transform(p => p.Date)
+				.Sort(SortExpressionComparer<DateOnly>.Ascending(p => p))
+				.Bind(out _selectedBrokerStatePeriods)
+				.Subscribe();
+			Func<PortfolioStateEntry, bool> MakeBrokerNameFilterForEntry(string? brokerName) =>
+				e => (e.BrokerName == brokerName) || (brokerName == StateManager.AggregationBrokerMarker);
+			Func<PortfolioStateEntry, bool> MakeStatePeriodFilter(DateOnly? date) =>
+				e => e.Date == date;
+			_manager.State.Entries
+				.Connect()
+				.Filter(SelectedStatePeriod.Select(MakeStatePeriodFilter))
+				.Filter(SelectedBroker.Select(MakeBrokerNameFilterForEntry))
+				.Bind(out _selectedPeriodPortfolio)
+				.Subscribe();
 			AddBroker = new ReactiveCommand();
 			AddBroker
 				.Select(async _ => {
@@ -96,19 +78,19 @@ namespace InvestmentAnalyzer.DesktopClient.ViewModels {
 					}
 					await _manager.AddBroker(brokerState);
 				}).Subscribe();
-			RemoveSelectedBroker = new ReactiveCommand(SelectedBroker.Select(b => b != null));
+			RemoveSelectedBroker = new ReactiveCommand(SelectedBroker.Select(b => !string.IsNullOrEmpty(b)));
 			RemoveSelectedBroker
 				.Select(async _ => {
 					var broker = SelectedBroker.Value;
-					if ( broker == null ) {
+					if ( string.IsNullOrEmpty(broker) ) {
 						return;
 					}
-					await _manager.RemoveBroker(broker.Name);
+					await _manager.RemoveBroker(broker);
 				}).Subscribe();
-			ImportState = new ReactiveCommand(SelectedBroker.Select(b => b != null));
+			ImportState = new ReactiveCommand(SelectedBroker.Select(b => !string.IsNullOrEmpty(b)));
 			ImportState
 				.Select(async _ => {
-					var brokerName = SelectedBroker.Value?.Name ?? string.Empty;
+					var brokerName = SelectedBroker.Value ?? string.Empty;
 					var paths = await ShowOpenFileDialog.Handle(new OpenFileDialogOptions(true));
 					await _manager.ImportPortfolioPeriods(brokerName, paths);
 				})
@@ -118,11 +100,10 @@ namespace InvestmentAnalyzer.DesktopClient.ViewModels {
 				.Select(async _ => {
 					var broker = SelectedBroker.Value;
 					var period = SelectedStatePeriod.Value;
-					if ( (broker == null) || (period == null) ) {
+					if ( string.IsNullOrEmpty(broker) || (period == null) ) {
 						return;
 					}
-					await _manager.RemovePortfolioPeriod(broker.Name, period);
-					SelectedBrokerStatePeriods.Remove(period);
+					await _manager.RemovePortfolioPeriod(broker, period.Value);
 				}).Subscribe();
 		}
 

@@ -1,5 +1,4 @@
 using System;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
@@ -30,7 +29,7 @@ namespace InvestmentAnalyzer.DesktopClient.ViewModels {
 					(name, format) => !string.IsNullOrEmpty(name) && !string.IsNullOrEmpty(format)));
 			Add
 				.Select(async _ => {
-					var state = new BrokerState(Name.Value, StateFormat.Value, new ObservableCollection<PortfolioState>());
+					var state = new BrokerState(Name.Value, StateFormat.Value);
 					await CloseWindow.Handle(state);
 				})
 				.Subscribe();
