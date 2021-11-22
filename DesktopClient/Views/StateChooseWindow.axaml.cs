@@ -3,7 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 
-namespace DesktopClient.Views {
+namespace InvestmentAnalyzer.DesktopClient.Views {
 	public class StateChooseWindow : Window {
 		public StateChooseWindow() {
 			InitializeComponent();

@@ -11,10 +11,9 @@ using InvestmentAnalyzer.State.Persistant;
 
 namespace InvestmentAnalyzer.State {
 	public sealed class StateManager {
-		public const string AggregationBrokerMarker = "All";
-
 		public AppState State { get; } = new(
 			new SourceList<BrokerState>(),
+			new SourceList<DateOnly>(),
 			new SourceList<PortfolioState>(),
 			new SourceList<PortfolioStateEntry>());
 
@@ -55,7 +54,6 @@ namespace InvestmentAnalyzer.State {
 					TryImportReport(broker, reportName, stream);
 				}
 			}
-			State.Brokers.Add(new BrokerState(AggregationBrokerMarker, string.Empty));
 			foreach ( var broker in newBrokers ) {
 				State.Brokers.Add(broker);
 			}
@@ -166,6 +164,9 @@ namespace InvestmentAnalyzer.State {
 				State.Entries.Add(e);
 			}
 			var portfolioState = new PortfolioState(broker.Name, dateOnly, reportName);
+			if ( !State.Periods.Items.Contains(dateOnly) ) {
+				State.Periods.Add(dateOnly);
+			}
 			State.Portfolio.Add(portfolioState);
 			Console.WriteLine($"Import state '{reportName}' for broker '{broker.Name}' finished");
 			return true;

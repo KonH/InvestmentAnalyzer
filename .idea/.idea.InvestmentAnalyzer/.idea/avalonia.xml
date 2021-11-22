@@ -5,6 +5,10 @@
       <map>
         <entry key="DesktopClient/App.axaml" value="DesktopClient/DesktopClient.csproj" />
         <entry key="DesktopClient/Views/AddBrokerWindow.axaml" value="DesktopClient/DesktopClient.csproj" />
+        <entry key="DesktopClient/Views/AssetStateWindow.axaml" value="DesktopClient/DesktopClient.csproj" />
+        <entry key="DesktopClient/Views/BrokerManagementWindow.axaml" value="DesktopClient/DesktopClient.csproj" />
+        <entry key="DesktopClient/Views/DashboardWindow.axaml" value="DesktopClient/DesktopClient.csproj" />
+        <entry key="DesktopClient/Views/ImportManagementWindow.axaml" value="DesktopClient/DesktopClient.csproj" />
         <entry key="DesktopClient/Views/MainWindow.axaml" value="DesktopClient/DesktopClient.csproj" />
         <entry key="DesktopClient/Views/StateChooseWindow.axaml" value="DesktopClient/DesktopClient.csproj" />
       </map>

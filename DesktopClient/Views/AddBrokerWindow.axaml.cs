@@ -6,7 +6,7 @@ using InvestmentAnalyzer.DesktopClient.ViewModels;
 using InvestmentAnalyzer.State;
 using ReactiveUI;
 
-namespace DesktopClient.Views {
+namespace InvestmentAnalyzer.DesktopClient.Views {
 	public class AddBrokerWindow : ReactiveWindow<AddBrokerWindowViewModel> {
 		public AddBrokerWindow() {
 			InitializeComponent();

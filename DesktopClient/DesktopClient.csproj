@@ -23,4 +23,14 @@
     <ProjectReference Include="..\DesktopClient.ViewModels\DesktopClient.ViewModels.csproj" />
     <ProjectReference Include="..\State\State.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Views\BrokerManagementWindow.axaml.cs">
+      <DependentUpon>BrokerManagementWindow.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\ImportManagementWindow.axaml.cs">
+      <DependentUpon>ImportManagementWindow.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+  </ItemGroup>
 </Project>
