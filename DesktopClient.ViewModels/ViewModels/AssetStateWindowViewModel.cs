@@ -6,6 +6,7 @@ using DynamicData;
 using DynamicData.Binding;
 using InvestmentAnalyzer.State;
 using Reactive.Bindings;
+using Reactive.Bindings.Extensions;
 
 namespace InvestmentAnalyzer.DesktopClient.ViewModels {
 	public sealed class AssetStateWindowViewModel : ViewModelBase {
@@ -28,6 +29,7 @@ namespace InvestmentAnalyzer.DesktopClient.ViewModels {
 			manager.State.Periods
 				.Connect()
 				.Sort(SortExpressionComparer<DateOnly>.Ascending(p => p))
+				.ObserveOnUIDispatcher()
 				.Bind(out _statePeriods)
 				.Subscribe();
 			Func<PortfolioStateEntry, bool> MakeStatePeriodFilter(DateOnly? date) =>
@@ -35,6 +37,7 @@ namespace InvestmentAnalyzer.DesktopClient.ViewModels {
 			manager.State.Entries
 				.Connect()
 				.Filter(SelectedStatePeriod.Select(MakeStatePeriodFilter))
+				.ObserveOnUIDispatcher()
 				.Bind(out _selectedPeriodPortfolio)
 				.Subscribe();
 		}

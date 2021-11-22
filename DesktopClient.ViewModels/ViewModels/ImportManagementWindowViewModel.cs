@@ -5,6 +5,7 @@ using DynamicData;
 using DynamicData.Binding;
 using InvestmentAnalyzer.State;
 using Reactive.Bindings;
+using Reactive.Bindings.Extensions;
 using ReactiveUI;
 using ReactiveCommand = Reactive.Bindings.ReactiveCommand;
 
@@ -32,6 +33,7 @@ namespace InvestmentAnalyzer.DesktopClient.ViewModels {
 			manager.State.Brokers
 				.Connect()
 				.Transform(b => b.Name)
+				.ObserveOnUIDispatcher()
 				.Bind(out _availableBrokers)
 				.Subscribe();
 			Func<PortfolioState, bool> MakeBrokerNameFilterForState(string? brokerName) =>
@@ -41,6 +43,7 @@ namespace InvestmentAnalyzer.DesktopClient.ViewModels {
 				.Filter(SelectedBroker.Select(MakeBrokerNameFilterForState))
 				.Transform(p => p.Date)
 				.Sort(SortExpressionComparer<DateOnly>.Ascending(p => p))
+				.ObserveOnUIDispatcher()
 				.Bind(out _selectedBrokerStatePeriods)
 				.Subscribe();
 			ImportState = new ReactiveCommand(SelectedBroker.Select(b => !string.IsNullOrEmpty(b)));

@@ -5,6 +5,7 @@ using System.Reactive.Linq;
 using DynamicData;
 using InvestmentAnalyzer.State;
 using Reactive.Bindings;
+using Reactive.Bindings.Extensions;
 using ReactiveUI;
 using ReactiveCommand = Reactive.Bindings.ReactiveCommand;
 
@@ -27,6 +28,7 @@ namespace InvestmentAnalyzer.DesktopClient.ViewModels {
 			manager.State.Brokers
 				.Connect()
 				.Transform(b => b.Name)
+				.ObserveOnUIDispatcher()
 				.Bind(out _availableBrokers)
 				.Subscribe();
 			AddBroker = new ReactiveCommand();
