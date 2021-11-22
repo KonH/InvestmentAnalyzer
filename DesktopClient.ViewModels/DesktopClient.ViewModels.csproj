@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.10" />
+        <PackageReference Include="ReactiveProperty" Version="8.0.0" />
+    </ItemGroup>
+    <ItemGroup>
+      <ProjectReference Include="..\State\State.csproj" />
+    </ItemGroup>
+
+</Project>

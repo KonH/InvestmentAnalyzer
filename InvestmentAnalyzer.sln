@@ -6,6 +6,10 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Importer", "Importer\Import
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DesktopClient", "DesktopClient\DesktopClient.csproj", "{CB6A2749-5061-4FB0-9C07-5952248582D6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DesktopClient.ViewModels", "DesktopClient.ViewModels\DesktopClient.ViewModels.csproj", "{9535F5B5-C26E-4DBC-A633-D3F8E50D2755}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DesktopClient.UnitTests", "DesktopClient.UnitTests\DesktopClient.UnitTests.csproj", "{1D7EBDCD-8E45-4B5E-8675-09493141DF5A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +28,13 @@ Global
 		{CB6A2749-5061-4FB0-9C07-5952248582D6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CB6A2749-5061-4FB0-9C07-5952248582D6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CB6A2749-5061-4FB0-9C07-5952248582D6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9535F5B5-C26E-4DBC-A633-D3F8E50D2755}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9535F5B5-C26E-4DBC-A633-D3F8E50D2755}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9535F5B5-C26E-4DBC-A633-D3F8E50D2755}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9535F5B5-C26E-4DBC-A633-D3F8E50D2755}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1D7EBDCD-8E45-4B5E-8675-09493141DF5A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1D7EBDCD-8E45-4B5E-8675-09493141DF5A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1D7EBDCD-8E45-4B5E-8675-09493141DF5A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1D7EBDCD-8E45-4B5E-8675-09493141DF5A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

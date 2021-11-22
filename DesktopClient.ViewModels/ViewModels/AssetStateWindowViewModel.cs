@@ -14,7 +14,7 @@ using ReactiveUI;
 using ReactiveCommand = Reactive.Bindings.ReactiveCommand;
 
 namespace InvestmentAnalyzer.DesktopClient.ViewModels {
-	public sealed class MainWindowViewModel : ViewModelBase {
+	public sealed class AssetStateWindowViewModel : ViewModelBase {
 		public ReactiveProperty<string?> SelectedBroker { get; } = new();
 
 		public ReadOnlyObservableCollection<string> AvailableBrokers => _availableBrokers;
@@ -42,9 +42,8 @@ namespace InvestmentAnalyzer.DesktopClient.ViewModels {
 		readonly ReadOnlyObservableCollection<DateOnly> _selectedBrokerStatePeriods;
 		readonly ReadOnlyObservableCollection<PortfolioStateEntry> _selectedPeriodPortfolio;
 
-		public MainWindowViewModel() {
-			var repository = new StateRepository();
-			_manager = new StateManager(repository);
+		public AssetStateWindowViewModel(StateManager manager) {
+			_manager = manager;
 			_manager.State.Brokers
 				.Connect()
 				.Transform(b => b.Name)

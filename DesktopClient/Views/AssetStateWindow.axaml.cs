@@ -11,10 +11,10 @@ using InvestmentAnalyzer.State;
 using ReactiveUI;
 
 namespace InvestmentAnalyzer.DesktopClient.Views {
-	public partial class MainWindow : ReactiveWindow<MainWindowViewModel> {
+	public partial class AssetStateWindow : ReactiveWindow<AssetStateWindowViewModel> {
 		bool _isAlreadyActivated = false;
 
-		public MainWindow() {
+		public AssetStateWindow() {
 			InitializeComponent();
 #if DEBUG
 			this.AttachDevTools();
@@ -30,7 +30,7 @@ namespace InvestmentAnalyzer.DesktopClient.Views {
 				return;
 			}
 			_isAlreadyActivated = true;
-			if ( DataContext is not MainWindowViewModel viewModel ) {
+			if ( DataContext is not AssetStateWindowViewModel viewModel ) {
 				return;
 			}
 			viewModel.ShowOpenFileDialog.RegisterHandler(ShowOpenFileDialog);
