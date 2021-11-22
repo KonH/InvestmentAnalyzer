@@ -17,7 +17,16 @@
             </ComboBox>
         </StackPanel>
 
-        <DataGrid Items="{Binding SelectedPeriodPortfolio}" AutoGenerateColumns="True">
+        <DataGrid Items="{Binding SelectedPeriodPortfolio}" AutoGenerateColumns="False">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Broker" Binding="{Binding BrokerName}"></DataGridTextColumn>
+                <DataGridTextColumn Header="ISIN" Binding="{Binding ISIN}"></DataGridTextColumn>
+                <DataGridTextColumn Header="Name" Binding="{Binding Name}"></DataGridTextColumn>
+                <DataGridTextColumn Header="Currency" Binding="{Binding  Currency}"></DataGridTextColumn>
+                <DataGridTextColumn Header="Count" Binding="{Binding Count}"></DataGridTextColumn>
+                <DataGridTextColumn Header="TotalPrice" Binding="{Binding  TotalPrice}"></DataGridTextColumn>
+                <DataGridTextColumn Header="PricePerUnit" Binding="{Binding  PricePerUnit}"></DataGridTextColumn>
+            </DataGrid.Columns>
         </DataGrid>
     </StackPanel>
 
