@@ -49,12 +49,18 @@ namespace InvestmentAnalyzer.State {
 			return manifest ?? new AppManifest();
 		}
 
-		public async Task SaveManifest(AppManifest manifest) {
+		public async Task<bool> SaveManifest(AppManifest manifest) {
 			using var zipArchive = LoadArchive();
 			var stateEntry = zipArchive.GetEntry(ManifestFileName) ?? zipArchive.CreateEntry(ManifestFileName);
 			await using var manifestStream = stateEntry.Open();
 			manifestStream.SetLength(0);
-			await JsonSerializer.SerializeAsync(manifestStream, manifest);
+			try {
+				await JsonSerializer.SerializeAsync(manifestStream, manifest);
+				return true;
+			} catch ( Exception e ) {
+				Console.WriteLine(e);
+				return false;
+			}
 		}
 
 		public async Task<Stream?> TryLoadAsMemoryStream(string entryName) {

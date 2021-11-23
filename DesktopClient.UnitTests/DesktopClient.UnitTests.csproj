@@ -15,6 +15,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\DesktopClient.Services\DesktopClient.Services.csproj" />
       <ProjectReference Include="..\DesktopClient.ViewModels\DesktopClient.ViewModels.csproj" />
     </ItemGroup>
 

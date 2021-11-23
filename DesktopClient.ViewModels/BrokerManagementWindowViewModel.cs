@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Reactive;
 using System.Reactive.Linq;
 using DynamicData;
+using InvestmentAnalyzer.DesktopClient.Services;
 using InvestmentAnalyzer.State;
 using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
@@ -22,7 +23,7 @@ namespace InvestmentAnalyzer.DesktopClient.ViewModels {
 
 		readonly ReadOnlyObservableCollection<string> _availableBrokers;
 
-		public BrokerManagementWindowViewModel(): this(new StateManager(new StateRepository())) {}
+		public BrokerManagementWindowViewModel(): this(new StateManager()) {}
 
 		public BrokerManagementWindowViewModel(StateManager manager) {
 			manager.State.Brokers

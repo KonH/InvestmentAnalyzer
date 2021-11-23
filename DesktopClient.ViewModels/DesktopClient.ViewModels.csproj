@@ -9,6 +9,7 @@
         <PackageReference Include="ReactiveProperty" Version="8.0.0" />
     </ItemGroup>
     <ItemGroup>
+      <ProjectReference Include="..\DesktopClient.Services\DesktopClient.Services.csproj" />
       <ProjectReference Include="..\State\State.csproj" />
     </ItemGroup>
 

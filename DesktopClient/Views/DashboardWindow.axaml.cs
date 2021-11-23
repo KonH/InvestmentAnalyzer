@@ -1,10 +1,9 @@
 using System.Reactive;
-using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Markup.Xaml;
 using Avalonia.ReactiveUI;
+using InvestmentAnalyzer.DesktopClient.Services;
 using InvestmentAnalyzer.DesktopClient.ViewModels;
-using InvestmentAnalyzer.State;
 using ReactiveUI;
 using Splat;
 
@@ -16,25 +15,15 @@ namespace InvestmentAnalyzer.DesktopClient.Views {
 			this.AttachDevTools();
 #endif
 			this.WhenActivated(_ => {
-				ViewModel?.ShowOpenFileDialog.RegisterHandler(this.ShowOpenFileDialog);
-				ViewModel?.ShowSaveFileDialog.RegisterHandler(this.ShowSaveFileDialog);
-				ViewModel?.ShowChooseStateDialog.RegisterHandler(ShowChooseStateDialog);
 				ViewModel?.CloseWindow.RegisterHandler(this.CloseWindow);
 				ViewModel?.ShowAssetStateWindow.RegisterHandler(ShowAssetStateWindow);
 				ViewModel?.ShowBrokerManagementWindow.RegisterHandler(ShowBrokerManagementWindow);
 				ViewModel?.ShowImportManagementWindow.RegisterHandler(ShowImportManagementWindow);
-				ViewModel?.Initialize().ConfigureAwait(false);
 			});
 		}
 
 		void InitializeComponent() {
 			AvaloniaXamlLoader.Load(this);
-		}
-
-		async Task ShowChooseStateDialog(InteractionContext<Unit, bool> interaction) {
-			var chooseDialog = new StateChooseWindow();
-			var shouldCreate = await chooseDialog.ShowDialog<bool>(this);
-			interaction.SetOutput(shouldCreate);
 		}
 
 		void ShowAssetStateWindow(InteractionContext<Unit, Unit> interaction) {

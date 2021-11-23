@@ -1,15 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using DynamicData;
 using InvestmentAnalyzer.Importer;
+using InvestmentAnalyzer.State;
 using InvestmentAnalyzer.State.Persistant;
 
-namespace InvestmentAnalyzer.State {
+namespace InvestmentAnalyzer.DesktopClient.Services {
 	public sealed class StateManager {
 		public AppState State { get; } = new(
 			new SourceList<BrokerState>(),
@@ -17,14 +17,11 @@ namespace InvestmentAnalyzer.State {
 			new SourceList<PortfolioState>(),
 			new SourceList<PortfolioStateEntry>());
 
-		readonly StateRepository _repository;
+		readonly StateRepository _repository = new();
+		readonly ExchangeService _exchangeService = new();
 
 		AppStartup? _startup;
 		AppManifest? _manifest;
-
-		public StateManager(StateRepository repository) {
-			_repository = repository;
-		}
 
 		public async Task<bool> TryInitialize() {
 			AssertStartup();
@@ -38,7 +35,7 @@ namespace InvestmentAnalyzer.State {
 			try {
 				await LoadManifest(allowCreate);
 			} catch ( Exception e ) {
-				Debug.Write(e);
+				Console.WriteLine(e);
 				return false;
 			}
 			AssertManifest();
@@ -51,7 +48,7 @@ namespace InvestmentAnalyzer.State {
 			foreach ( var broker in newBrokers ) {
 				var reports = await LoadReports(broker.Name);
 				foreach ( var (reportName, stream) in reports ) {
-					TryImportReport(broker, reportName, stream);
+					await TryImportReport(broker, reportName, stream);
 				}
 			}
 			foreach ( var broker in newBrokers ) {
@@ -113,7 +110,7 @@ namespace InvestmentAnalyzer.State {
 				var reportPath = $"Reports/{reportName}";
 				await _repository.AddEntry(path, reportPath);
 				var stream = await _repository.TryLoadAsMemoryStream(reportPath);
-				if ( TryImportReport(brokerState, reportName, stream) ) {
+				if ( await TryImportReport(brokerState, reportName, stream) ) {
 					brokerManifest.Reports.Add(reportName, reportPath);
 					await SaveManifest();
 				} else {
@@ -148,7 +145,7 @@ namespace InvestmentAnalyzer.State {
 			await SaveManifest();
 		}
 
-		bool TryImportReport(BrokerState broker, string reportName, Stream? stream) {
+		async Task<bool> TryImportReport(BrokerState broker, string reportName, Stream? stream) {
 			Console.WriteLine($"Importing state '{reportName}' for broker '{broker.Name}'");
 			var result = StateImporter.LoadStateByFormat(stream, broker.StateFormat);
 			if ( !result.Success ) {
@@ -169,7 +166,23 @@ namespace InvestmentAnalyzer.State {
 			}
 			State.Portfolio.Add(portfolioState);
 			Console.WriteLine($"Import state '{reportName}' for broker '{broker.Name}' finished");
-			return true;
+			var requiredCurrencyCodes = entries
+				.Select(e => e.Currency)
+				.Where(c => c != "RUB")
+				.Distinct()
+				.ToArray();
+			AssertManifest();
+			if ( requiredCurrencyCodes.All(c => _manifest.Exchanges.Any(e =>
+				e.Date == dateOnly.ToString("dd/MM/yyyy") && e.CharCode == c)) ) {
+				return true;
+			}
+			var exchanges = await _exchangeService.GetExchanges(dateOnly);
+			var requiredExchanges = exchanges
+				.Where(e => requiredCurrencyCodes.Contains(e.CharCode))
+				.Select(dto => new Exchange(dto.Date.ToString("dd/MM/yyyy"), dto.CharCode, dto.Nominal, dto.Value))
+				.ToArray();
+			_manifest.Exchanges.AddRange(requiredExchanges);
+			return await SaveManifest();
 		}
 
 		async Task SaveStartup() {
@@ -184,9 +197,9 @@ namespace InvestmentAnalyzer.State {
 			_manifest = await _repository.LoadOrCreateManifest();
 		}
 
-		async Task SaveManifest() {
+		async Task<bool> SaveManifest() {
 			AssertManifest();
-			await _repository.SaveManifest(_manifest);
+			return await _repository.SaveManifest(_manifest);
 		}
 
 		async Task<IReadOnlyDictionary<string, Stream?>> LoadReports(string brokerName) {

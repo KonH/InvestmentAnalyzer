@@ -30,14 +30,5 @@ namespace InvestmentAnalyzer.DesktopClient.Views {
 		public static void CloseWindow(this Window window, InteractionContext<Unit, Unit> interaction) {
 			window.Close();
 		}
-
-		public static async Task ShowAddBrokerWindow(
-			this Window window, InteractionContext<Unit, BrokerState?> interaction) {
-			var addBrokerDialog = new AddBrokerWindow {
-				ViewModel = new AddBrokerWindowViewModel()
-			};
-			var result = await addBrokerDialog.ShowDialog<BrokerState?>(window);
-			interaction.SetOutput(result);
-		}
 	}
 }

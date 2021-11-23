@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reactive.Linq;
 using DynamicData;
 using DynamicData.Binding;
+using InvestmentAnalyzer.DesktopClient.Services;
 using InvestmentAnalyzer.State;
 using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
@@ -19,7 +20,7 @@ namespace InvestmentAnalyzer.DesktopClient.ViewModels {
 		readonly ReadOnlyObservableCollection<DateOnly> _statePeriods;
 		readonly ReadOnlyObservableCollection<PortfolioStateEntry> _selectedPeriodPortfolio;
 
-		public AssetStateWindowViewModel(): this(new StateManager(new StateRepository())) {}
+		public AssetStateWindowViewModel(): this(new StateManager()) {}
 
 		public AssetStateWindowViewModel(StateManager manager) {
 			var lastPeriod = manager.State.Periods.Items.LastOrDefault();

@@ -1,0 +1,18 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:viewModels="clr-namespace:InvestmentAnalyzer.DesktopClient.ViewModels;assembly=DesktopClient.ViewModels"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="DesktopClient.Views.InitializationWindow"
+        Title="InitializationWindow">
+
+    <Design.DataContext>
+        <viewModels:InitializationWindowViewModel/>
+    </Design.DataContext>
+
+    <StackPanel Orientation="Horizontal" Margin="10" Spacing="5">
+        <Button Command="{Binding OpenState}">Open</Button>
+        <Button Command="{Binding CreateState}">Create</Button>
+    </StackPanel>
+</Window>

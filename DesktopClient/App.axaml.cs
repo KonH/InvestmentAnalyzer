@@ -1,9 +1,9 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using DesktopClient.Views;
+using InvestmentAnalyzer.DesktopClient.Services;
 using InvestmentAnalyzer.DesktopClient.ViewModels;
-using InvestmentAnalyzer.DesktopClient.Views;
-using InvestmentAnalyzer.State;
 using Splat;
 
 namespace InvestmentAnalyzer.DesktopClient {
@@ -15,8 +15,8 @@ namespace InvestmentAnalyzer.DesktopClient {
 
 		public override void OnFrameworkInitializationCompleted() {
 			if ( ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop ) {
-				desktop.MainWindow = new DashboardWindow {
-					DataContext = new DashboardWindowViewModel(Locator.Current.GetService<StateManager>()),
+				desktop.MainWindow = new InitializationWindow {
+					ViewModel = new InitializationWindowViewModel(Locator.Current.GetService<StateManager>())
 				};
 			}
 			base.OnFrameworkInitializationCompleted();

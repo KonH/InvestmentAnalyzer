@@ -2,11 +2,12 @@ using System;
 using System.Linq;
 using DynamicData;
 using FluentAssertions;
+using InvestmentAnalyzer.DesktopClient.Services;
 using InvestmentAnalyzer.DesktopClient.ViewModels;
 using InvestmentAnalyzer.State;
 using NUnit.Framework;
 
-namespace DesktopClient.UnitTests {
+namespace InvestmentAnalyzer.DesktopClient.UnitTests {
 	public class AssetStateWindowViewModelTest {
 		readonly string[] _brokers = { "Broker1", "Broker2" };
 		readonly DateOnly[] _periods = { new(2000, 01, 01), new(2000, 02, 01) };
@@ -32,8 +33,7 @@ namespace DesktopClient.UnitTests {
 		}
 
 		AssetStateWindowViewModel CreateViewModel() {
-			var repository = new StateRepository();
-			var manager = new StateManager(repository);
+			var manager = new StateManager();
 			var state = manager.State;
 			foreach ( var broker in _brokers ) {
 				state.Brokers.Add(new BrokerState(broker, string.Empty));
