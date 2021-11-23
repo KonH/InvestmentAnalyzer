@@ -8,6 +8,7 @@ namespace InvestmentAnalyzer.DesktopClient.ViewModels {
 	public sealed class DashboardWindowViewModel : ViewModelBase {
 		public ReactiveCommand ShowAssets { get; }
 		public ReactiveCommand ShowAssetPlot { get; }
+		public ReactiveCommand ShowOperations { get; }
 		public ReactiveCommand ShowBrokers { get; }
 		public ReactiveCommand ShowImportState { get; }
 		public ReactiveCommand ShowImportOperations { get; }
@@ -15,6 +16,7 @@ namespace InvestmentAnalyzer.DesktopClient.ViewModels {
 		public Interaction<Unit, Unit> CloseWindow { get; } = new();
 		public Interaction<Unit, Unit> ShowAssetStateWindow { get; } = new();
 		public Interaction<Unit, Unit> ShowAssetPlotWindow { get; } = new();
+		public Interaction<Unit, Unit> ShowOperationsWindow { get; } = new();
 		public Interaction<Unit, Unit> ShowBrokerManagementWindow { get; } = new();
 		public Interaction<Unit, Unit> ShowImportStateManagementWindow { get; } = new();
 		public Interaction<Unit, Unit> ShowImportOperationsManagementWindow { get; } = new();
@@ -27,6 +29,10 @@ namespace InvestmentAnalyzer.DesktopClient.ViewModels {
 			ShowAssetPlot = new ReactiveCommand();
 			ShowAssetPlot
 				.Select(async _ => await ShowAssetPlotWindow.Handle(Unit.Default))
+				.Subscribe();
+			ShowOperations = new ReactiveCommand();
+			ShowOperations
+				.Select(async _ => await ShowOperationsWindow.Handle(Unit.Default))
 				.Subscribe();
 			ShowBrokers = new ReactiveCommand();
 			ShowBrokers

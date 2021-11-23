@@ -1,0 +1,30 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:viewModels="clr-namespace:InvestmentAnalyzer.DesktopClient.ViewModels;assembly=DesktopClient.ViewModels"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="InvestmentAnalyzer.DesktopClient.Views.OperationsWindow"
+        Title="Operations">
+
+    <Design.DataContext>
+        <viewModels:OperationsWindowViewModel/>
+    </Design.DataContext>
+
+    <StackPanel Spacing="5" Margin="10">
+        <StackPanel Orientation="Horizontal" Spacing="5">
+            <ComboBox Items="{Binding OperationPeriods}" SelectedItem="{Binding SelectedOperationPeriod.Value}">
+            </ComboBox>
+        </StackPanel>
+
+        <DataGrid Items="{Binding SelectedPeriodOperations}" AutoGenerateColumns="False">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Broker" Binding="{Binding BrokerName}"></DataGridTextColumn>
+                <DataGridTextColumn Header="Type" Binding="{Binding Type}"></DataGridTextColumn>
+                <DataGridTextColumn Header="Currency" Binding="{Binding Currency}"></DataGridTextColumn>
+                <DataGridTextColumn Header="Volume" Binding="{Binding  Volume}"></DataGridTextColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+    </StackPanel>
+
+</Window>
