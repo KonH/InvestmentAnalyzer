@@ -2,6 +2,7 @@ using System.Reactive;
 using Avalonia;
 using Avalonia.Markup.Xaml;
 using Avalonia.ReactiveUI;
+using DesktopClient.Views;
 using InvestmentAnalyzer.DesktopClient.Services;
 using InvestmentAnalyzer.DesktopClient.ViewModels;
 using ReactiveUI;
@@ -17,6 +18,7 @@ namespace InvestmentAnalyzer.DesktopClient.Views {
 			this.WhenActivated(_ => {
 				ViewModel?.CloseWindow.RegisterHandler(this.CloseWindow);
 				ViewModel?.ShowAssetStateWindow.RegisterHandler(ShowAssetStateWindow);
+				ViewModel?.ShowAssetPlotWindow.RegisterHandler(ShowAssetPlotWindow);
 				ViewModel?.ShowBrokerManagementWindow.RegisterHandler(ShowBrokerManagementWindow);
 				ViewModel?.ShowImportManagementWindow.RegisterHandler(ShowImportManagementWindow);
 			});
@@ -31,6 +33,14 @@ namespace InvestmentAnalyzer.DesktopClient.Views {
 				ViewModel = new AssetStateWindowViewModel(Locator.Current.GetService<StateManager>())
 			};
 			assetStateWindow.Show(this);
+			interaction.SetOutput(Unit.Default);
+		}
+
+		void ShowAssetPlotWindow(InteractionContext<Unit, Unit> interaction) {
+			var assetPlotWindow = new AssetPlotWindow {
+				ViewModel = new AssetPlotWindowViewModel(Locator.Current.GetService<StateManager>())
+			};
+			assetPlotWindow.Show(this);
 			interaction.SetOutput(Unit.Default);
 		}
 

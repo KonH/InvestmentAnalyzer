@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using DesktopClient.Services;
 using DynamicData;
 using InvestmentAnalyzer.Importer;
 using InvestmentAnalyzer.State;
@@ -143,6 +144,29 @@ namespace InvestmentAnalyzer.DesktopClient.Services {
 			brokerManifest.Reports.Remove(reportName);
 			_repository.DeleteEntry(reportPath);
 			await SaveManifest();
+		}
+
+		public IReadOnlyCollection<AssetPriceMeasurement> CalculateAssetPriceMeasurements() =>
+			State.Entries.Items
+				.GroupBy(e => e.Date)
+				.Select(g =>
+					new AssetPriceMeasurement(g.Key.ToDateTime(TimeOnly.MinValue), CalculateSum(g)))
+				.ToArray();
+
+		double CalculateSum(IEnumerable<PortfolioStateEntry> entries) =>
+			entries.Sum(GetConvertedPrice);
+
+		double GetConvertedPrice(PortfolioStateEntry entry) {
+			if ( entry.Currency == "RUB" ) {
+				return entry.TotalPrice;
+			}
+			var date = entry.Date.ToString("dd/MM/yyyy");
+			AssertManifest();
+			var sourcePrice = entry.TotalPrice;
+			var targetExchange = _manifest.Exchanges
+				.First(e => (e.Date == date) && (e.CharCode == entry.Currency));
+			var targetPrice = sourcePrice * (targetExchange.Value / targetExchange.Nominal);
+			return targetPrice;
 		}
 
 		async Task<bool> TryImportReport(BrokerState broker, string reportName, Stream? stream) {

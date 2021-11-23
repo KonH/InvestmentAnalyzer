@@ -1,0 +1,29 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:viewModels="clr-namespace:InvestmentAnalyzer.DesktopClient.ViewModels;assembly=DesktopClient.ViewModels"
+        xmlns:oxy="clr-namespace:OxyPlot.Avalonia;assembly=OxyPlot.Avalonia"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="DesktopClient.Views.AssetPlotWindow"
+        Title="AssetPlotWindow">
+
+    <Design.DataContext>
+        <viewModels:AssetPlotWindowViewModel />
+    </Design.DataContext>
+
+    <oxy:Plot PlotMargins="50 0 0 50">
+        <oxy:Plot.Axes>
+            <oxy:DateTimeAxis Position="Bottom" StringFormat="yyyy-MM-dd" Title="Date"/>
+        </oxy:Plot.Axes>
+        <oxy:Plot.Series>
+            <oxy:LineSeries Title="Total Price" DataFieldX="Date"
+                            DataFieldY="TotalPrice"
+                            Items="{Binding Measurements}"
+                            StrokeThickness="2" Color="Green"
+                            TrackerFormatString="#{2:yyyy-MM-dd}: {4}"
+            />
+        </oxy:Plot.Series>
+    </oxy:Plot>
+
+</Window>

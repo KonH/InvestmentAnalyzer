@@ -3,11 +3,9 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.ReactiveUI;
-using InvestmentAnalyzer.DesktopClient.Services;
 using InvestmentAnalyzer.DesktopClient.ViewModels;
 using InvestmentAnalyzer.DesktopClient.Views;
 using ReactiveUI;
-using Splat;
 
 namespace DesktopClient.Views {
 	public class InitializationWindow : ReactiveWindow<InitializationWindowViewModel> {
@@ -31,7 +29,7 @@ namespace DesktopClient.Views {
 		void ShowDashboardWindow(InteractionContext<Unit, Unit> interaction) {
 			if ( Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop ) {
 				var dashboardWindow = new DashboardWindow {
-					ViewModel = new DashboardWindowViewModel(Locator.Current.GetService<StateManager>()),
+					ViewModel = new DashboardWindowViewModel(),
 				};
 				dashboardWindow.Show(this);
 			}

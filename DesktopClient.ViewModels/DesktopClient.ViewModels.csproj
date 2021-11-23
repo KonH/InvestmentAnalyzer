@@ -6,6 +6,7 @@
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.10" />
+        <PackageReference Include="OxyPlot.Avalonia" Version="2.1.0-20210506.4" />
         <PackageReference Include="ReactiveProperty" Version="8.0.0" />
     </ItemGroup>
     <ItemGroup>

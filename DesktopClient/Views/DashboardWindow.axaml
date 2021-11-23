@@ -12,7 +12,10 @@
     </Design.DataContext>
 
     <StackPanel Margin="10" Spacing="5">
-        <Button Command="{Binding ShowAssets}">Assets</Button>
+        <StackPanel Orientation="Horizontal">
+            <Button Command="{Binding ShowAssets}">Assets</Button>
+            <Button Command="{Binding ShowAssetPlot}">Plot</Button>
+        </StackPanel>
         <Button Command="{Binding ShowBrokers}">Brokers</Button>
         <Button Command="{Binding ShowImport}">Import</Button>
     </StackPanel>

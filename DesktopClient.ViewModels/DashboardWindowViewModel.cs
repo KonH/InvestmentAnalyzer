@@ -8,23 +8,24 @@ using ReactiveCommand = Reactive.Bindings.ReactiveCommand;
 namespace InvestmentAnalyzer.DesktopClient.ViewModels {
 	public sealed class DashboardWindowViewModel : ViewModelBase {
 		public ReactiveCommand ShowAssets { get; }
+		public ReactiveCommand ShowAssetPlot { get; }
 		public ReactiveCommand ShowBrokers { get; }
 		public ReactiveCommand ShowImport { get; }
 
 		public Interaction<Unit, Unit> CloseWindow { get; } = new();
 		public Interaction<Unit, Unit> ShowAssetStateWindow { get; } = new();
+		public Interaction<Unit, Unit> ShowAssetPlotWindow { get; } = new();
 		public Interaction<Unit, Unit> ShowBrokerManagementWindow { get; } = new();
 		public Interaction<Unit, Unit> ShowImportManagementWindow { get; } = new();
 
-		readonly StateManager _manager;
-
-		public DashboardWindowViewModel(): this(new StateManager()) {}
-
-		public DashboardWindowViewModel(StateManager manager) {
-			_manager = manager;
+		public DashboardWindowViewModel() {
 			ShowAssets = new ReactiveCommand();
 			ShowAssets
 				.Select(async _ => await ShowAssetStateWindow.Handle(Unit.Default))
+				.Subscribe();
+			ShowAssetPlot = new ReactiveCommand();
+			ShowAssetPlot
+				.Select(async _ => await ShowAssetPlotWindow.Handle(Unit.Default))
 				.Subscribe();
 			ShowBrokers = new ReactiveCommand();
 			ShowBrokers
