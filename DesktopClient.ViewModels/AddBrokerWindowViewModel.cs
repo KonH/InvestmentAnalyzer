@@ -14,8 +14,14 @@ namespace InvestmentAnalyzer.DesktopClient.ViewModels {
 			"TinkoffMyAssets",
 		};
 
+		public string[] AvailableOperationFormats => new[] {
+			"AlphaDirectMoneyMove",
+			"TinkoffMoneyMove",
+		};
+
 		public ReactiveProperty<string> Name { get; } = new();
 		public ReactiveProperty<string> StateFormat { get; } = new();
+		public ReactiveProperty<string> OperationsFormat { get; } = new();
 
 		public Interaction<BrokerState?, Unit> CloseWindow { get; } = new();
 
@@ -24,12 +30,14 @@ namespace InvestmentAnalyzer.DesktopClient.ViewModels {
 
 		public AddBrokerWindowViewModel() {
 			StateFormat.Value = AvailableStateFormats.First();
+			OperationsFormat.Value = AvailableOperationFormats.First();
 			Add = new ReactiveCommand(
-				Name.CombineLatest(StateFormat,
-					(name, format) => !string.IsNullOrEmpty(name) && !string.IsNullOrEmpty(format)));
+				Name.CombineLatest(StateFormat, OperationsFormat,
+					(name, stateFormat, operationsFormat) =>
+						!string.IsNullOrEmpty(name) && !string.IsNullOrEmpty(stateFormat) && !string.IsNullOrEmpty(operationsFormat)));
 			Add
 				.Select(async _ => {
-					var state = new BrokerState(Name.Value, StateFormat.Value);
+					var state = new BrokerState(Name.Value, StateFormat.Value, OperationsFormat.Value);
 					await CloseWindow.Handle(state);
 				})
 				.Subscribe();

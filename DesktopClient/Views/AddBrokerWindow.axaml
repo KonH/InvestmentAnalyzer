@@ -23,6 +23,11 @@
         </StackPanel>
 
         <StackPanel Orientation="Horizontal" Spacing="5">
+            <TextBlock>Operations Format:</TextBlock>
+            <ComboBox SelectedItem="{Binding OperationsFormat.Value}" Items="{Binding AvailableOperationFormats}"></ComboBox>
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal" Spacing="5">
             <Button Command="{Binding Add}">Add</Button>
             <Button Command="{Binding Cancel}">Cancel</Button>
         </StackPanel>

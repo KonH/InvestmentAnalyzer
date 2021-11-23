@@ -11,7 +11,7 @@ using ReactiveUI;
 using ReactiveCommand = Reactive.Bindings.ReactiveCommand;
 
 namespace InvestmentAnalyzer.DesktopClient.ViewModels {
-	public sealed class ImportManagementWindowViewModel : ViewModelBase {
+	public sealed class ImportStateManagementWindowViewModel : ViewModelBase {
 		public ReactiveProperty<string?> SelectedBroker { get; } = new();
 
 		public ReactiveProperty<DateOnly?> SelectedStatePeriod { get; } = new();
@@ -28,9 +28,9 @@ namespace InvestmentAnalyzer.DesktopClient.ViewModels {
 		readonly ReadOnlyObservableCollection<string> _availableBrokers;
 		readonly ReadOnlyObservableCollection<DateOnly> _selectedBrokerStatePeriods;
 
-		public ImportManagementWindowViewModel(): this(new StateManager()) {}
+		public ImportStateManagementWindowViewModel(): this(new StateManager()) {}
 
-		public ImportManagementWindowViewModel(StateManager manager) {
+		public ImportStateManagementWindowViewModel(StateManager manager) {
 			manager.State.Brokers
 				.Connect()
 				.Transform(b => b.Name)

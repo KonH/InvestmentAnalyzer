@@ -1,4 +1,4 @@
-module private InvestmentAnalyzer.Importer.Tinkoff
+module private InvestmentAnalyzer.Importer.TinkoffState
 
 open System
 open System.Text.RegularExpressions
@@ -147,7 +147,7 @@ let readDate (lines: string list) =
     |> (fun parts -> parts.[parts.Length - 1])
     |> tryParseDate "dd.MM.yyyy"
 
-let tinkoffImport stream =
+let tinkoffStateImport stream =
     let lines = stream |> loadDocument |> readAllLines
     let assetLines = loadAssetLines lines
     let infoLines = loadInfoLines lines

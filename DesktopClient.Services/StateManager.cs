@@ -16,6 +16,7 @@ namespace InvestmentAnalyzer.DesktopClient.Services {
 			new SourceList<BrokerState>(),
 			new SourceList<DateOnly>(),
 			new SourceList<PortfolioState>(),
+			new SourceList<OperationState>(),
 			new SourceList<PortfolioStateEntry>());
 
 		readonly StateRepository _repository = new();
@@ -44,12 +45,17 @@ namespace InvestmentAnalyzer.DesktopClient.Services {
 			var newBrokers = _manifest.Brokers
 				.Select(b => new BrokerState(
 					b.Name,
-					b.StateFormat))
+					b.StateFormat,
+					b.OperationsFormat))
 				.ToArray();
 			foreach ( var broker in newBrokers ) {
-				var reports = await LoadReports(broker.Name);
-				foreach ( var (reportName, stream) in reports ) {
-					await TryImportReport(broker, reportName, stream);
+				var stateReports = await LoadStateReports(broker.Name);
+				foreach ( var (reportName, stream) in stateReports ) {
+					await TryImportStateReport(broker, reportName, stream);
+				}
+				var operationReports = await LoadOperationReports(broker.Name);
+				foreach ( var (reportName, stream) in operationReports ) {
+					await TryImportOperationReport(broker, reportName, stream);
 				}
 			}
 			foreach ( var broker in newBrokers ) {
@@ -70,7 +76,8 @@ namespace InvestmentAnalyzer.DesktopClient.Services {
 			_manifest.Brokers.Add(new BrokerManifest {
 				Name = broker.Name,
 				Reports = new Dictionary<string, string>(),
-				StateFormat = broker.StateFormat
+				StateFormat = broker.StateFormat,
+				OperationsFormat = broker.OperationsFormat,
 			});
 			await SaveManifest();
 		}
@@ -111,8 +118,33 @@ namespace InvestmentAnalyzer.DesktopClient.Services {
 				var reportPath = $"Reports/{reportName}";
 				await _repository.AddEntry(path, reportPath);
 				var stream = await _repository.TryLoadAsMemoryStream(reportPath);
-				if ( await TryImportReport(brokerState, reportName, stream) ) {
+				if ( await TryImportStateReport(brokerState, reportName, stream) ) {
 					brokerManifest.Reports.Add(reportName, reportPath);
+					await SaveManifest();
+				} else {
+					_repository.DeleteEntry(reportPath);
+				}
+			}
+		}
+
+		public async Task ImportOperationPeriods(string brokerName, string[] paths) {
+			var brokerState = State.Brokers.Items
+				.FirstOrDefault(b => b.Name == brokerName);
+			if ( brokerState == null ) {
+				return;
+			}
+			AssertManifest();
+			var brokerManifest = _manifest.Brokers.FirstOrDefault(b => b.Name == brokerName);
+			if ( brokerManifest == null ) {
+				return;
+			}
+			foreach ( var path in paths ) {
+				var reportName = Path.GetFileName(path);
+				var reportPath = $"Reports/{reportName}";
+				await _repository.AddEntry(path, reportPath);
+				var stream = await _repository.TryLoadAsMemoryStream(reportPath);
+				if ( await TryImportOperationReport(brokerState, reportName, stream) ) {
+					brokerManifest.OperationReports.Add(reportName, reportPath);
 					await SaveManifest();
 				} else {
 					_repository.DeleteEntry(reportPath);
@@ -146,6 +178,32 @@ namespace InvestmentAnalyzer.DesktopClient.Services {
 			await SaveManifest();
 		}
 
+		public async Task RemoveOperationPeriod(string brokerName, DateOnly period) {
+			var brokerState = State.Brokers.Items
+				.FirstOrDefault(b => b.Name == brokerName);
+			if ( brokerState == null ) {
+				return;
+			}
+			AssertManifest();
+			var operationPeriod = State.OperationStates.Items
+				.FirstOrDefault(p => (p.BrokerName == brokerName) && (p.Date == period));
+			if ( operationPeriod == null ) {
+				return;
+			}
+			var reportName = operationPeriod.ReportName;
+			var brokerManifest = _manifest.Brokers.FirstOrDefault(b => b.Name == brokerName);
+			if ( brokerManifest == null ) {
+				return;
+			}
+			if ( !brokerManifest.Reports.TryGetValue(reportName, out var reportPath) ) {
+				return;
+			}
+			State.OperationStates.Remove(operationPeriod);
+			brokerManifest.OperationReports.Remove(reportName);
+			_repository.DeleteEntry(reportPath);
+			await SaveManifest();
+		}
+
 		public IReadOnlyCollection<AssetPriceMeasurement> CalculateAssetPriceMeasurements() =>
 			State.Entries.Items
 				.GroupBy(e => e.Date)
@@ -169,11 +227,11 @@ namespace InvestmentAnalyzer.DesktopClient.Services {
 			return targetPrice;
 		}
 
-		async Task<bool> TryImportReport(BrokerState broker, string reportName, Stream? stream) {
+		async Task<bool> TryImportStateReport(BrokerState broker, string reportName, Stream? stream) {
 			Console.WriteLine($"Importing state '{reportName}' for broker '{broker.Name}'");
 			var result = StateImporter.LoadStateByFormat(stream, broker.StateFormat);
 			if ( !result.Success ) {
-				Console.WriteLine($"Failed to load report '{reportName}' for broker '{broker.Name}': {string.Join("\n", result.Errors)}");
+				Console.WriteLine($"Failed to load state report '{reportName}' for broker '{broker.Name}': {string.Join("\n", result.Errors)}");
 				return false;
 			}
 			var dateOnly = DateOnly.FromDateTime(result.Date);
@@ -209,6 +267,24 @@ namespace InvestmentAnalyzer.DesktopClient.Services {
 			return await SaveManifest();
 		}
 
+		async Task<bool> TryImportOperationReport(BrokerState broker, string reportName, Stream? stream) {
+			Console.WriteLine($"Importing operations '{reportName}' for broker '{broker.Name}'");
+			var result = OperationImporter.LoadOperationsByFormat(stream, broker.OperationsFormat);
+			if ( !result.Success ) {
+				Console.WriteLine($"Failed to load state report '{reportName}' for broker '{broker.Name}': {string.Join("\n", result.Errors)}");
+				return false;
+			}
+			// TODO: add operations
+			var dateOnly = DateOnly.FromDateTime(result.Date);
+			var operationState = new OperationState(broker.Name, dateOnly, reportName);
+			if ( !State.Periods.Items.Contains(dateOnly) ) {
+				State.Periods.Add(dateOnly);
+			}
+			State.OperationStates.Add(operationState);
+			Console.WriteLine($"Import operations '{reportName}' for broker '{broker.Name}' finished");
+			return await SaveManifest();
+		}
+
 		async Task SaveStartup() {
 			AssertStartup();
 			await _repository.SaveStartup(_startup);
@@ -226,13 +302,28 @@ namespace InvestmentAnalyzer.DesktopClient.Services {
 			return await _repository.SaveManifest(_manifest);
 		}
 
-		async Task<IReadOnlyDictionary<string, Stream?>> LoadReports(string brokerName) {
+		async Task<IReadOnlyDictionary<string, Stream?>> LoadStateReports(string brokerName) {
 			AssertManifest();
 			var brokerManifest = _manifest.Brokers.FirstOrDefault(b => b.Name == brokerName);
 			if ( brokerManifest == null ) {
 				return new Dictionary<string, Stream?>();
 			}
 			var tasks = brokerManifest.Reports
+				.ToDictionary(
+					p => p.Key,
+					p => TryLoadReport(p.Value));
+			await Task.WhenAll(tasks.Values);
+			return tasks
+				.ToDictionary(p => p.Key, p => p.Value.Result);
+		}
+
+		async Task<IReadOnlyDictionary<string, Stream?>> LoadOperationReports(string brokerName) {
+			AssertManifest();
+			var brokerManifest = _manifest.Brokers.FirstOrDefault(b => b.Name == brokerName);
+			if ( brokerManifest == null ) {
+				return new Dictionary<string, Stream?>();
+			}
+			var tasks = brokerManifest.OperationReports
 				.ToDictionary(
 					p => p.Key,
 					p => TryLoadReport(p.Value));

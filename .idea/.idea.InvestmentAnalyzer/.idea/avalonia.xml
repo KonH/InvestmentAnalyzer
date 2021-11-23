@@ -11,6 +11,8 @@
         <entry key="DesktopClient/Views/BrokerManagementWindow.axaml" value="DesktopClient/DesktopClient.csproj" />
         <entry key="DesktopClient/Views/DashboardWindow.axaml" value="DesktopClient/DesktopClient.csproj" />
         <entry key="DesktopClient/Views/ImportManagementWindow.axaml" value="DesktopClient/DesktopClient.csproj" />
+        <entry key="DesktopClient/Views/ImportOperationsManagementWindow.axaml" value="DesktopClient/DesktopClient.csproj" />
+        <entry key="DesktopClient/Views/ImportStateManagementWindow.axaml" value="DesktopClient/DesktopClient.csproj" />
         <entry key="DesktopClient/Views/InitializationWindow.axaml" value="DesktopClient/DesktopClient.csproj" />
         <entry key="DesktopClient/Views/MainWindow.axaml" value="DesktopClient/DesktopClient.csproj" />
         <entry key="DesktopClient/Views/StateChooseWindow.axaml" value="DesktopClient/DesktopClient.csproj" />

@@ -17,6 +17,7 @@
             <Button Command="{Binding ShowAssetPlot}">Plot</Button>
         </StackPanel>
         <Button Command="{Binding ShowBrokers}">Brokers</Button>
-        <Button Command="{Binding ShowImport}">Import</Button>
+        <Button Command="{Binding ShowImportState}">Import State</Button>
+        <Button Command="{Binding ShowImportOperations}">Import Operations</Button>
     </StackPanel>
 </Window>

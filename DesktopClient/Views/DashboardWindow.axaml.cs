@@ -20,7 +20,8 @@ namespace InvestmentAnalyzer.DesktopClient.Views {
 				ViewModel?.ShowAssetStateWindow.RegisterHandler(ShowAssetStateWindow);
 				ViewModel?.ShowAssetPlotWindow.RegisterHandler(ShowAssetPlotWindow);
 				ViewModel?.ShowBrokerManagementWindow.RegisterHandler(ShowBrokerManagementWindow);
-				ViewModel?.ShowImportManagementWindow.RegisterHandler(ShowImportManagementWindow);
+				ViewModel?.ShowImportStateManagementWindow.RegisterHandler(ShowImportStateManagementWindow);
+				ViewModel?.ShowImportOperationsManagementWindow.RegisterHandler(ShowImportOperationsManagementWindow);
 			});
 		}
 
@@ -52,11 +53,19 @@ namespace InvestmentAnalyzer.DesktopClient.Views {
 			interaction.SetOutput(Unit.Default);
 		}
 
-		void ShowImportManagementWindow(InteractionContext<Unit, Unit> interaction) {
-			var assetStateWindow = new ImportManagementWindow {
-				ViewModel = new ImportManagementWindowViewModel(Locator.Current.GetService<StateManager>())
+		void ShowImportStateManagementWindow(InteractionContext<Unit, Unit> interaction) {
+			var assetStateWindow = new ImportStateManagementWindow {
+				ViewModel = new ImportStateManagementWindowViewModel(Locator.Current.GetService<StateManager>())
 			};
 			assetStateWindow.Show(this);
+			interaction.SetOutput(Unit.Default);
+		}
+
+		void ShowImportOperationsManagementWindow(InteractionContext<Unit, Unit> interaction) {
+			var assetOperationsWindow = new ImportOperationsManagementWindow {
+				ViewModel = new ImportOperationsManagementWindowViewModel(Locator.Current.GetService<StateManager>())
+			};
+			assetOperationsWindow.Show(this);
 			interaction.SetOutput(Unit.Default);
 		}
 	}

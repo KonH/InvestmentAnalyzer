@@ -4,8 +4,8 @@ open System
 open System.IO
 open InvestmentAnalyzer.Importer.Common
 open InvestmentAnalyzer.Importer.Utils
-open InvestmentAnalyzer.Importer.AlphaDirect
-open InvestmentAnalyzer.Importer.Tinkoff
+open InvestmentAnalyzer.Importer.AlphaDirectState
+open InvestmentAnalyzer.Importer.TinkoffState
 
 type StateReportFormat =
     | AlphaDirectMyPortfolio
@@ -38,7 +38,7 @@ let private exceptionToResult func =
 let LoadStateByFormat (stream: Stream, formatStr: string) : ImportResult =
     let format = unionFromString<StateReportFormat> formatStr
     match format with
-    | Some AlphaDirectMyPortfolio -> exceptionToResult (fun () -> alphaDirectImport stream)
-    | Some TinkoffMyAssets -> exceptionToResult (fun () -> tinkoffImport stream)
+    | Some AlphaDirectMyPortfolio -> exceptionToResult (fun () -> alphaDirectStateImport stream)
+    | Some TinkoffMyAssets -> exceptionToResult (fun () -> tinkoffStateImport stream)
     | None -> Error [$"Unknown state format '{formatStr}'"]
     |> convertToExporterResult

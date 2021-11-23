@@ -5,8 +5,8 @@ using InvestmentAnalyzer.DesktopClient.ViewModels;
 using ReactiveUI;
 
 namespace InvestmentAnalyzer.DesktopClient.Views {
-	public partial class ImportManagementWindow : ReactiveWindow<ImportManagementWindowViewModel> {
-		public ImportManagementWindow() {
+	public partial class ImportOperationsManagementWindow : ReactiveWindow<ImportOperationsManagementWindowViewModel> {
+		public ImportOperationsManagementWindow() {
 			InitializeComponent();
 #if DEBUG
 			this.AttachDevTools();

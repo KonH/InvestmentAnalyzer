@@ -36,7 +36,7 @@ namespace InvestmentAnalyzer.DesktopClient.UnitTests {
 			var manager = new StateManager();
 			var state = manager.State;
 			foreach ( var broker in _brokers ) {
-				state.Brokers.Add(new BrokerState(broker, string.Empty));
+				state.Brokers.Add(new BrokerState(broker, string.Empty, string.Empty));
 				foreach ( var period in _periods ) {
 					if ( !state.Periods.Items.Contains(period) ) {
 						state.Periods.Add(period);

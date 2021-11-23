@@ -1,4 +1,4 @@
-module private InvestmentAnalyzer.Importer.AlphaDirect
+module private InvestmentAnalyzer.Importer.AlphaDirectState
 
 open System.Xml
 open FsToolkit.ErrorHandling
@@ -110,7 +110,7 @@ let importValidXml (xml: XmlDocument) =
     |> removeNamespace "MyPortfolio"
     |> handleXmlContent
 
-let alphaDirectImport stream =
+let alphaDirectStateImport stream =
     stream
     |> loadXml
     |> Result.bind importValidXml

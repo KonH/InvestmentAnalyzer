@@ -10,9 +10,12 @@
         <Compile Include="Utils.fs" />
         <Compile Include="XmlUtils.fs" />
         <Compile Include="PrdUtils.fs" />
-        <Compile Include="AlphaDirect.fs" />
-        <Compile Include="Tinkoff.fs" />
+        <Compile Include="AlphaDirectState.fs" />
+        <Compile Include="AlphaDirectOperations.fs" />
+        <Compile Include="TinkoffState.fs" />
+        <Compile Include="TinkoffOperations.fs" />
         <Compile Include="StateImporter.fs" />
+        <Compile Include="OperationImporter.fs" />
     </ItemGroup>
 
     <ItemGroup>

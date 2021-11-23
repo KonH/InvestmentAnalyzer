@@ -8,3 +8,8 @@ type StateEntry = {
     TotalPrice: float
     PricePerUnit: float
 }
+
+// TODO: make data layout
+type OperationEntry = {
+    None: float
+}

@@ -1,3 +1,3 @@
 namespace InvestmentAnalyzer.State {
-	public record BrokerState(string Name, string StateFormat);
+	public record BrokerState(string Name, string StateFormat, string OperationsFormat);
 }

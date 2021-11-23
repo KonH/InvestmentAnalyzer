@@ -4,11 +4,11 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:viewModels="clr-namespace:InvestmentAnalyzer.DesktopClient.ViewModels;assembly=DesktopClient.ViewModels"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-        x:Class="InvestmentAnalyzer.DesktopClient.Views.ImportManagementWindow"
-        Title="DesktopClient">
+        x:Class="InvestmentAnalyzer.DesktopClient.Views.ImportOperationsManagementWindow"
+        Title="Import Operations">
 
     <Design.DataContext>
-        <viewModels:ImportManagementWindowViewModel/>
+        <viewModels:ImportOperationsManagementWindowViewModel/>
     </Design.DataContext>
 
     <StackPanel Spacing="5" Margin="10">
@@ -17,11 +17,11 @@
             </ComboBox>
         </StackPanel>
         <StackPanel Orientation="Horizontal" Spacing="5">
-            <ComboBox Items="{Binding SelectedBrokerStatePeriods}" SelectedItem="{Binding SelectedStatePeriod.Value}">
+            <ComboBox Items="{Binding SelectedBrokerOperationPeriods}" SelectedItem="{Binding SelectedOperationPeriod.Value}">
             </ComboBox>
         </StackPanel>
-        <Button Command="{Binding ImportState}">Import State</Button>
-        <Button Command="{Binding RemoveSelectedState}">Remove Selected State</Button>
+        <Button Command="{Binding ImportOperations}">Import Operations</Button>
+        <Button Command="{Binding RemoveSelectedOperations}">Remove Selected Operations</Button>
     </StackPanel>
 
 </Window>

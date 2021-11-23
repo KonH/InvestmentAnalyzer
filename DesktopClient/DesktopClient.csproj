@@ -28,8 +28,12 @@
       <DependentUpon>BrokerManagementWindow.axaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Update="Views\ImportManagementWindow.axaml.cs">
+    <Compile Update="Views\ImportStateManagementWindow.axaml.cs">
       <DependentUpon>ImportManagementWindow.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\ImportOperationsManagementWindow.axaml.cs">
+      <DependentUpon>ImportOperationsManagementWindow.axaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
