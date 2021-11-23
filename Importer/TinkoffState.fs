@@ -5,7 +5,7 @@ open System.Text.RegularExpressions
 open FsToolkit.ErrorHandling
 open InvestmentAnalyzer.Importer.Common
 open InvestmentAnalyzer.Importer.Utils
-open InvestmentAnalyzer.Importer.PrdUtils
+open InvestmentAnalyzer.Importer.PdfUtils
 
 type AssetType =
     | Bond
@@ -72,12 +72,12 @@ let getIndexes assetType =
 
 let createEntryByValues name isin currency =
     {
-        ISIN = isin;
-        Name = name;
+        ISIN = isin
+        Name = name
         Currency = currency
-        Count = 0.0;
-        TotalPrice = 0.0;
-        PricePerUnit = 0.0;
+        Count = 0.0
+        TotalPrice = 0.0
+        PricePerUnit = 0.0
     }
 
 let createEntry currency (infoParts: string array) =

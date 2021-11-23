@@ -69,12 +69,12 @@ let addCurrency (value: Option<string>) (entry: StateEntry) : Result<StateEntry,
 
 let importDetailNode (entry: AlphaDirectRawEntry) =
     {
-        ISIN = "";
-        Name = "";
+        ISIN = ""
+        Name = ""
         Currency = ""
-        Count = 0.0;
-        TotalPrice = 0.0;
-        PricePerUnit = 0.0;
+        Count = 0.0
+        TotalPrice = 0.0
+        PricePerUnit = 0.0
     }
     |> addIsin entry.isinStr
     |> Result.bind (addName entry.activeNameStr)

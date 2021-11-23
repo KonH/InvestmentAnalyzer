@@ -15,14 +15,14 @@ type ImportResult = {
     Success: bool
     Errors: string[]
     Date: DateTime
-    Entries: OperationEntry[]
+    Operations: OperationEntry[]
 }
 
 let private ok date entries =
-    { Success = true; Errors = Array.ofList []; Date = date; Entries = Array.ofList entries }
+    { Success = true; Errors = Array.ofList []; Date = date; Operations = Array.ofList entries }
 
 let private error errors =
-    { Success = false; Errors = Array.ofList errors; Date = DateTime.MinValue; Entries = Array.ofList [] }
+    { Success = false; Errors = Array.ofList errors; Date = DateTime.MinValue; Operations = Array.ofList [] }
 
 let private convertToExporterResult (result: Result<DateTime * OperationEntry list, string list>) =
     match result with

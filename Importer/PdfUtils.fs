@@ -1,4 +1,4 @@
-module private InvestmentAnalyzer.Importer.PrdUtils
+module private InvestmentAnalyzer.Importer.PdfUtils
 
 open System.Collections.Generic
 open System.IO

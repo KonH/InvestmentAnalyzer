@@ -1,5 +1,7 @@
 module InvestmentAnalyzer.Importer.Common
 
+open System
+
 type StateEntry = {
     ISIN: string
     Name: string
@@ -9,7 +11,14 @@ type StateEntry = {
     PricePerUnit: float
 }
 
-// TODO: make data layout
+type OperationType =
+    | In
+    | Out
+    | Ignored
+
 type OperationEntry = {
-    None: float
+    Date: DateTime
+    Type: OperationType
+    Currency: string
+    Volume: float
 }

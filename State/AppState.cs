@@ -7,5 +7,6 @@ namespace InvestmentAnalyzer.State {
 		SourceList<DateOnly> Periods,
 		SourceList<PortfolioState> Portfolio,
 		SourceList<OperationState> OperationStates,
-		SourceList<PortfolioStateEntry> Entries);
+		SourceList<PortfolioStateEntry> Entries,
+		SourceList<PortfolioOperationEntry> Operations);
 }

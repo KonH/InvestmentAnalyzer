@@ -17,7 +17,8 @@ namespace InvestmentAnalyzer.DesktopClient.Services {
 			new SourceList<DateOnly>(),
 			new SourceList<PortfolioState>(),
 			new SourceList<OperationState>(),
-			new SourceList<PortfolioStateEntry>());
+			new SourceList<PortfolioStateEntry>(),
+			new SourceList<PortfolioOperationEntry>());
 
 		readonly StateRepository _repository = new();
 		readonly ExchangeService _exchangeService = new();
@@ -274,8 +275,15 @@ namespace InvestmentAnalyzer.DesktopClient.Services {
 				Console.WriteLine($"Failed to load state report '{reportName}' for broker '{broker.Name}': {string.Join("\n", result.Errors)}");
 				return false;
 			}
-			// TODO: add operations
 			var dateOnly = DateOnly.FromDateTime(result.Date);
+			var operations = result.Operations
+				.Where(e => !e.Type.Equals(Common.OperationType.Ignored))
+				.Select(e => new PortfolioOperationEntry(
+					dateOnly, broker.Name, e.Type.ToString(), e.Currency, e.Volume))
+				.ToList();
+			foreach ( var e in operations ) {
+				State.Operations.Add(e);
+			}
 			var operationState = new OperationState(broker.Name, dateOnly, reportName);
 			if ( !State.Periods.Items.Contains(dateOnly) ) {
 				State.Periods.Add(dateOnly);

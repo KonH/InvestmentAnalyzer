@@ -9,7 +9,7 @@
         <Compile Include="Common.fs" />
         <Compile Include="Utils.fs" />
         <Compile Include="XmlUtils.fs" />
-        <Compile Include="PrdUtils.fs" />
+        <Compile Include="PdfUtils.fs" />
         <Compile Include="AlphaDirectState.fs" />
         <Compile Include="AlphaDirectOperations.fs" />
         <Compile Include="TinkoffState.fs" />
