@@ -23,6 +23,12 @@
                             StrokeThickness="2" Color="Green"
                             TrackerFormatString="#{2:yyyy-MM-dd}: {4}"
             />
+            <oxy:LineSeries Title="Cumulative Funds" DataFieldX="Date"
+                            DataFieldY="CumulativeFunds"
+                            Items="{Binding Measurements}"
+                            StrokeThickness="2" Color="Red"
+                            TrackerFormatString="#{2:yyyy-MM-dd}: {4}"
+            />
         </oxy:Plot.Series>
     </oxy:Plot>
 

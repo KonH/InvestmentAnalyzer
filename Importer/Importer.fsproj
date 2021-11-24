@@ -19,8 +19,10 @@
     </ItemGroup>
 
     <ItemGroup>
+      <PackageReference Include="ClosedXML" Version="0.95.4" />
       <PackageReference Include="FsToolkit.ErrorHandling" Version="2.10.0" />
       <PackageReference Include="itext7" Version="7.2.0" />
+      <PackageReference Include="runtime.osx.10.10-x64.CoreCompat.System.Drawing" Version="6.0.5.128" />
     </ItemGroup>
 
 </Project>

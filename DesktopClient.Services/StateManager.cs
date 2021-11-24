@@ -116,7 +116,7 @@ namespace InvestmentAnalyzer.DesktopClient.Services {
 			}
 			foreach ( var path in paths ) {
 				var reportName = Path.GetFileName(path);
-				var reportPath = $"Reports/{reportName}";
+				var reportPath = $"Reports/{brokerName}/{reportName}";
 				await _repository.AddEntry(path, reportPath);
 				var stream = await _repository.TryLoadAsMemoryStream(reportPath);
 				if ( await TryImportStateReport(brokerState, reportName, stream) ) {
@@ -141,7 +141,7 @@ namespace InvestmentAnalyzer.DesktopClient.Services {
 			}
 			foreach ( var path in paths ) {
 				var reportName = Path.GetFileName(path);
-				var reportPath = $"Reports/{reportName}";
+				var reportPath = $"Reports/{brokerName}/{reportName}";
 				await _repository.AddEntry(path, reportPath);
 				var stream = await _repository.TryLoadAsMemoryStream(reportPath);
 				if ( await TryImportOperationReport(brokerState, reportName, stream) ) {
@@ -209,21 +209,37 @@ namespace InvestmentAnalyzer.DesktopClient.Services {
 			State.Entries.Items
 				.GroupBy(e => e.Date)
 				.Select(g =>
-					new AssetPriceMeasurement(g.Key.ToDateTime(TimeOnly.MinValue), CalculateSum(g)))
+					new AssetPriceMeasurement(g.Key.ToDateTime(TimeOnly.MinValue), CalculateSum(g), GetCumulativeFunds(g.Key)))
 				.ToArray();
 
 		double CalculateSum(IEnumerable<PortfolioStateEntry> entries) =>
 			entries.Sum(GetConvertedPrice);
 
-		double GetConvertedPrice(PortfolioStateEntry entry) {
-			if ( entry.Currency == "RUB" ) {
-				return entry.TotalPrice;
+		double GetCumulativeFunds(DateOnly date) {
+			var trackTypes = new[] {
+				Common.OperationType.In.ToString(),
+				Common.OperationType.Out.ToString(),
+			};
+			return State.Operations.Items
+				.Where(o => trackTypes.Contains(o.Type))
+				.Where(o => o.Date <= date)
+				.Sum(GetConvertedPrice);
+		}
+
+		double GetConvertedPrice(PortfolioStateEntry entry) =>
+			GetConvertedPrice(entry.Currency, entry.TotalPrice, entry.Date);
+
+		double GetConvertedPrice(PortfolioOperationEntry entry) =>
+			GetConvertedPrice(entry.Currency, entry.Volume, entry.Date);
+
+		double GetConvertedPrice(string currency, double sourcePrice, DateOnly date) {
+			if ( currency == "RUB" ) {
+				return sourcePrice;
 			}
-			var date = entry.Date.ToString("dd/MM/yyyy");
+			var dateStr = date.ToString("dd/MM/yyyy");
 			AssertManifest();
-			var sourcePrice = entry.TotalPrice;
 			var targetExchange = _manifest.Exchanges
-				.First(e => (e.Date == date) && (e.CharCode == entry.Currency));
+				.First(e => (e.Date == dateStr) && (e.CharCode == currency));
 			var targetPrice = sourcePrice * (targetExchange.Value / targetExchange.Nominal);
 			return targetPrice;
 		}
@@ -235,17 +251,17 @@ namespace InvestmentAnalyzer.DesktopClient.Services {
 				Console.WriteLine($"Failed to load state report '{reportName}' for broker '{broker.Name}': {string.Join("\n", result.Errors)}");
 				return false;
 			}
-			var dateOnly = DateOnly.FromDateTime(result.Date);
+			var date = DateOnly.FromDateTime(result.Date);
 			var entries = result.Entries
 				.Select(e => new PortfolioStateEntry(
-					dateOnly, broker.Name, e.ISIN, e.Name, e.Currency, e.Count, e.TotalPrice, e.PricePerUnit))
+					date, broker.Name, e.ISIN, e.Name, e.Currency, e.Count, e.TotalPrice, e.PricePerUnit))
 				.ToList();
 			foreach ( var e in entries ) {
 				State.Entries.Add(e);
 			}
-			var portfolioState = new PortfolioState(broker.Name, dateOnly, reportName);
-			if ( !State.Periods.Items.Contains(dateOnly) ) {
-				State.Periods.Add(dateOnly);
+			var portfolioState = new PortfolioState(broker.Name, date, reportName);
+			if ( !State.Periods.Items.Contains(date) ) {
+				State.Periods.Add(date);
 			}
 			State.Portfolio.Add(portfolioState);
 			Console.WriteLine($"Import state '{reportName}' for broker '{broker.Name}' finished");
@@ -254,18 +270,7 @@ namespace InvestmentAnalyzer.DesktopClient.Services {
 				.Where(c => c != "RUB")
 				.Distinct()
 				.ToArray();
-			AssertManifest();
-			if ( requiredCurrencyCodes.All(c => _manifest.Exchanges.Any(e =>
-				e.Date == dateOnly.ToString("dd/MM/yyyy") && e.CharCode == c)) ) {
-				return true;
-			}
-			var exchanges = await _exchangeService.GetExchanges(dateOnly);
-			var requiredExchanges = exchanges
-				.Where(e => requiredCurrencyCodes.Contains(e.CharCode))
-				.Select(dto => new Exchange(dto.Date.ToString("dd/MM/yyyy"), dto.CharCode, dto.Nominal, dto.Value))
-				.ToArray();
-			_manifest.Exchanges.AddRange(requiredExchanges);
-			return await SaveManifest();
+			return await TryAddRequiredExchanges(date, requiredCurrencyCodes);
 		}
 
 		async Task<bool> TryImportOperationReport(BrokerState broker, string reportName, Stream? stream) {
@@ -275,21 +280,41 @@ namespace InvestmentAnalyzer.DesktopClient.Services {
 				Console.WriteLine($"Failed to load state report '{reportName}' for broker '{broker.Name}': {string.Join("\n", result.Errors)}");
 				return false;
 			}
-			var dateOnly = DateOnly.FromDateTime(result.Date);
+			var date = DateOnly.FromDateTime(result.Date);
 			var operations = result.Operations
-				.Where(e => !e.Type.Equals(Common.OperationType.Ignored))
+				.Where(e => e.Type.Tag is not Common.OperationType.Tags.Ignored)
 				.Select(e => new PortfolioOperationEntry(
-					dateOnly, broker.Name, e.Type.ToString(), e.Currency, e.Volume))
+					date, broker.Name, e.Type.ToString(), e.Currency, e.Volume))
 				.ToList();
 			foreach ( var e in operations ) {
 				State.Operations.Add(e);
 			}
-			var operationState = new OperationState(broker.Name, dateOnly, reportName);
-			if ( !State.Periods.Items.Contains(dateOnly) ) {
-				State.Periods.Add(dateOnly);
+			var operationState = new OperationState(broker.Name, date, reportName);
+			if ( !State.Periods.Items.Contains(date) ) {
+				State.Periods.Add(date);
 			}
 			State.OperationStates.Add(operationState);
 			Console.WriteLine($"Import operations '{reportName}' for broker '{broker.Name}' finished");
+			var requiredCurrencyCodes = operations
+				.Select(e => e.Currency)
+				.Where(c => c != "RUB")
+				.Distinct()
+				.ToArray();
+			return await TryAddRequiredExchanges(date, requiredCurrencyCodes);
+		}
+
+		async Task<bool> TryAddRequiredExchanges(DateOnly date, IReadOnlyCollection<string> requiredCurrencyCodes) {
+			AssertManifest();
+			if ( requiredCurrencyCodes.All(c => _manifest.Exchanges.Any(e =>
+				e.Date == date.ToString("dd/MM/yyyy") && e.CharCode == c)) ) {
+				return true;
+			}
+			var exchanges = await _exchangeService.GetExchanges(date);
+			var requiredExchanges = exchanges
+				.Where(e => requiredCurrencyCodes.Contains(e.CharCode))
+				.Select(dto => new Exchange(dto.Date.ToString("dd/MM/yyyy"), dto.CharCode, dto.Nominal, dto.Value))
+				.ToArray();
+			_manifest.Exchanges.AddRange(requiredExchanges);
 			return await SaveManifest();
 		}
 
