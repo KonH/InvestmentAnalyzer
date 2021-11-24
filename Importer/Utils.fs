@@ -5,6 +5,16 @@ open System.Globalization
 open FsToolkit.ErrorHandling
 open Microsoft.FSharp.Reflection
 
+type ResultBuilder() =
+    member __.Bind(x, f) =
+        match x with
+        | Error e -> Error e
+        | Ok x -> f x
+    member __.Return x = Ok x
+    member __.ReturnFrom x = x
+
+let result = ResultBuilder()
+
 let getOptionString str =
     match str with
     | _ when String.IsNullOrEmpty(str) -> None

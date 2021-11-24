@@ -101,9 +101,11 @@ let loadDate (xml: XmlDocument) =
     |> Result.bind (tryParseDate "dd.MM.yyyy")
 
 let handleXmlContent (xml: XmlDocument) =
-    let date = xml |> loadDate
-    let entries = xml |> loadDetailNodes |> importDetailNodes
-    Result.zip date entries
+    result {
+        let! date = xml |> loadDate
+        let! entries = xml |> loadDetailNodes |> importDetailNodes
+        return (date, entries)
+    }
 
 let importValidXml (xml: XmlDocument) =
     xml

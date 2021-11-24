@@ -151,6 +151,8 @@ let tinkoffStateImport stream =
     let lines = stream |> loadDocument |> readAllLines
     let assetLines = loadAssetLines lines
     let infoLines = loadInfoLines lines
-    let date = readDate lines
-    let assets = processAssets assetLines infoLines
-    Result.zip date assets
+    result {
+        let! date = readDate lines
+        let! assets = processAssets assetLines infoLines
+        return (date, assets)
+    }
