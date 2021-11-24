@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Threading;
 using DynamicData;
 using FluentAssertions;
 using InvestmentAnalyzer.DesktopClient.Services;
@@ -11,6 +12,10 @@ namespace InvestmentAnalyzer.DesktopClient.UnitTests {
 	public class AssetStateWindowViewModelTest {
 		readonly string[] _brokers = { "Broker1", "Broker2" };
 		readonly DateOnly[] _periods = { new(2000, 01, 01), new(2000, 02, 01) };
+
+		static AssetStateWindowViewModelTest() {
+			SynchronizationContext.SetSynchronizationContext(new SynchronizationContext());
+		}
 
 		[Test]
 		public void IsDistinctPeriodsForAllBrokersShown() {
