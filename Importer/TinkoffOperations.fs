@@ -1,6 +1,7 @@
 module private InvestmentAnalyzer.Importer.TinkoffOperations
 
 open System
+open System.Globalization
 open System.Linq
 open System.IO
 open ClosedXML.Excel
@@ -49,7 +50,8 @@ let handleOperationRow (columns: OperationColumns) (currency: string) (row: IXLR
         let operationType = convertType operation
         let income = operationType = In
         let sumLetter = if income then columns.Income else columns.Expense
-        let sum = row.Cell(sumLetter).GetDouble()
+        let sumStr = row.Cell(sumLetter).GetString()
+        let sum = Double.Parse(sumStr.Replace(',', '.'), CultureInfo.InvariantCulture)
         let date = DateTime.ParseExact(dateCell.GetString(), "dd.MM.yyyy", null)
         let volume = if income then sum else -sum
         Some {
