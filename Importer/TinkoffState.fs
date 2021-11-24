@@ -75,9 +75,9 @@ let createEntryByValues name isin currency =
         ISIN = isin
         Name = name
         Currency = currency
-        Count = 0.0
-        TotalPrice = 0.0
-        PricePerUnit = 0.0
+        Count = 0.0m
+        TotalPrice = 0.0m
+        PricePerUnit = 0.0m
     }
 
 let createEntry currency (infoParts: string array) =
@@ -90,15 +90,15 @@ let createEntry currency (infoParts: string array) =
         Error [$"Failed to get info from infoParts: {String.Join(';', infoParts)}"]
 
 let addCount str entry =
-    tryParseDouble str
+    tryParseDecimal str
     |> Result.map (fun v -> { entry with Count = v })
 
 let addPricePerUnit str entry =
-    tryParseDouble str
+    tryParseDecimal str
     |> Result.map (fun v -> { entry with PricePerUnit = v })
 
 let addTotalPrice str entry =
-    tryParseDouble str
+    tryParseDecimal str
     |> Result.map (fun v -> { entry with TotalPrice = v })
 
 let lookupInfoBaseIndexCustom (infoLines: string array) (code: string) =

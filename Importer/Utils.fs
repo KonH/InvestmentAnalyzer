@@ -20,10 +20,10 @@ let optionToResult error option =
     | Some result -> Ok result
     | None _ -> Error error
 
-let tryParseDouble (str: string) =
-    match Double.TryParse(str) with
+let tryParseDecimal (str: string) =
+    match Decimal.TryParse(str) with
     | true, v -> Ok v
-    | _ -> Error [$"Failed to parse double from '{str}'"]
+    | _ -> Error [$"Failed to parse decimal from '{str}'"]
 
 let reduceResult (result: Result<Result<'a, 'b>, 'b>) : Result<'a, 'b> =
     match result with

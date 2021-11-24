@@ -51,7 +51,7 @@ let handleOperationRow (columns: OperationColumns) (currency: string) (row: IXLR
         let income = operationType = In
         let sumLetter = if income then columns.Income else columns.Expense
         let sumStr = row.Cell(sumLetter).GetString()
-        let sum = Double.Parse(sumStr.Replace(',', '.'), CultureInfo.InvariantCulture)
+        let sum = Decimal.Parse(sumStr.Replace(',', '.'), CultureInfo.InvariantCulture)
         let date = DateTime.ParseExact(dateCell.GetString(), "dd.MM.yyyy", null)
         let volume = if income then sum else -sum
         Some {

@@ -34,11 +34,11 @@ namespace InvestmentAnalyzer.DesktopClient.Services {
 				var provider = new NumberFormatInfo {
 					NumberDecimalSeparator = ","
 				};
-				if ( !double.TryParse(nominalStr, NumberStyles.Any, provider, out var nominal) ) {
+				if ( !decimal.TryParse(nominalStr, NumberStyles.Any, provider, out var nominal) ) {
 					continue;
 				}
 				var valueStr = node.SelectSingleNode("Value")?.InnerText ?? string.Empty;
-				if ( !double.TryParse(valueStr, NumberStyles.Any, provider, out var value) ) {
+				if ( !decimal.TryParse(valueStr, NumberStyles.Any, provider, out var value) ) {
 					continue;
 				}
 				result.Add(new ExchangeDto(date, charCode, nominal, value));

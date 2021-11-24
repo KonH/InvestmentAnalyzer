@@ -212,10 +212,10 @@ namespace InvestmentAnalyzer.DesktopClient.Services {
 					new AssetPriceMeasurement(g.Key.ToDateTime(TimeOnly.MinValue), CalculateSum(g), GetCumulativeFunds(g.Key)))
 				.ToArray();
 
-		double CalculateSum(IEnumerable<PortfolioStateEntry> entries) =>
+		decimal CalculateSum(IEnumerable<PortfolioStateEntry> entries) =>
 			entries.Sum(GetConvertedPrice);
 
-		double GetCumulativeFunds(DateOnly date) {
+		decimal GetCumulativeFunds(DateOnly date) {
 			var trackTypes = new[] {
 				Common.OperationType.In.ToString(),
 				Common.OperationType.Out.ToString(),
@@ -226,13 +226,13 @@ namespace InvestmentAnalyzer.DesktopClient.Services {
 				.Sum(GetConvertedPrice);
 		}
 
-		double GetConvertedPrice(PortfolioStateEntry entry) =>
+		decimal GetConvertedPrice(PortfolioStateEntry entry) =>
 			GetConvertedPrice(entry.Currency, entry.TotalPrice, entry.Date);
 
-		double GetConvertedPrice(PortfolioOperationEntry entry) =>
+		decimal GetConvertedPrice(PortfolioOperationEntry entry) =>
 			GetConvertedPrice(entry.Currency, entry.Volume, entry.Date);
 
-		double GetConvertedPrice(string currency, double sourcePrice, DateOnly date) {
+		decimal GetConvertedPrice(string currency, decimal sourcePrice, DateOnly date) {
 			if ( currency == "RUB" ) {
 				return sourcePrice;
 			}

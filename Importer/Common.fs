@@ -6,9 +6,9 @@ type StateEntry = {
     ISIN: string
     Name: string
     Currency: string
-    Count: float
-    TotalPrice: float
-    PricePerUnit: float
+    Count: decimal
+    TotalPrice: decimal
+    PricePerUnit: decimal
 }
 
 type OperationType =
@@ -20,5 +20,5 @@ type OperationEntry = {
     Date: DateTime
     Type: OperationType
     Currency: string
-    Volume: float
+    Volume: decimal
 }

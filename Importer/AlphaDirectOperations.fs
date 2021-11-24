@@ -30,7 +30,7 @@ let convertToMoneyMove (node: XmlNode) =
     let volumeAttr = node.Attributes.["volume"]
     if isNull volumeAttr then
         (pCode, None) else
-        match tryParseDouble volumeAttr.Value with
+        match tryParseDecimal volumeAttr.Value with
         | Ok volume -> (pCode, Some volume)
         | _ -> (pCode, None)
 

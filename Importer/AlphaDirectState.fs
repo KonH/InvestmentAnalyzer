@@ -48,17 +48,17 @@ let addName (value: Option<string>) (entry: StateEntry) : Result<StateEntry, str
 let addCount (value: Option<string>) (entry: StateEntry) : Result<StateEntry, string list> =
     value
     |> optionToResult ["Failed to read Count"]
-    |> Result.map tryParseDouble
+    |> Result.map tryParseDecimal
     |> reduceResult
     |> Result.map (fun v -> { entry with Count = v })
 
 let addPricePerUnit (entry: StateEntry) : StateEntry =
-    { entry with PricePerUnit = entry.TotalPrice / float entry.Count }
+    { entry with PricePerUnit = entry.TotalPrice / decimal entry.Count }
 
 let addTotalPrice (value: Option<string>) (entry: StateEntry) : Result<StateEntry, string list> =
     value
     |> optionToResult ["Failed to read TotalPrice"]
-    |> Result.map tryParseDouble
+    |> Result.map tryParseDecimal
     |> reduceResult
     |> Result.map (fun v -> { entry with TotalPrice = v })
 
@@ -72,9 +72,9 @@ let importDetailNode (entry: AlphaDirectRawEntry) =
         ISIN = ""
         Name = ""
         Currency = ""
-        Count = 0.0
-        TotalPrice = 0.0
-        PricePerUnit = 0.0
+        Count = 0.0m
+        TotalPrice = 0.0m
+        PricePerUnit = 0.0m
     }
     |> addIsin entry.isinStr
     |> Result.bind (addName entry.activeNameStr)
