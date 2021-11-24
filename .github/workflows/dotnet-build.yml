@@ -26,6 +26,7 @@ jobs:
     - name: Publish
       run: >
         dotnet publish DesktopClient/DesktopClient.csproj
+        -c Release
         -r osx-x64
         -p:PublishReadyToRun=true
         -p:PublishSingleFile=true
@@ -34,4 +35,4 @@ jobs:
     - uses: actions/upload-artifact@v2
       with:
         name: InvestmentAnalyzer.osx-x64
-        path: DesktopClient/bin/Debug/net6.0/osx-x64/publish/
+        path: DesktopClient/bin/Release/net6.0/osx-x64/publish/
