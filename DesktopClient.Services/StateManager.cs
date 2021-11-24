@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
@@ -20,11 +21,19 @@ namespace InvestmentAnalyzer.DesktopClient.Services {
 			new SourceList<PortfolioStateEntry>(),
 			new SourceList<PortfolioOperationEntry>());
 
-		readonly StateRepository _repository = new();
-		readonly ExchangeService _exchangeService = new();
+		public ObservableCollection<string> LogLines => _logger.Lines;
+
+		readonly CustomLogger _logger = new();
+		readonly StateRepository _repository;
+		readonly ExchangeService _exchangeService;
 
 		AppStartup? _startup;
 		AppManifest? _manifest;
+
+		public StateManager() {
+			_repository = new StateRepository(_logger);
+			_exchangeService = new ExchangeService(_logger);
+		}
 
 		public async Task<bool> TryInitialize() {
 			AssertStartup();
@@ -38,7 +47,7 @@ namespace InvestmentAnalyzer.DesktopClient.Services {
 			try {
 				await LoadManifest(allowCreate);
 			} catch ( Exception e ) {
-				Console.WriteLine(e);
+				_logger.WriteLine(e.ToString());
 				return false;
 			}
 			AssertManifest();
@@ -245,10 +254,10 @@ namespace InvestmentAnalyzer.DesktopClient.Services {
 		}
 
 		async Task<bool> TryImportStateReport(BrokerState broker, string reportName, Stream? stream) {
-			Console.WriteLine($"Importing state '{reportName}' for broker '{broker.Name}'");
+			_logger.WriteLine($"Importing state '{reportName}' for broker '{broker.Name}'");
 			var result = StateImporter.LoadStateByFormat(stream, broker.StateFormat);
 			if ( !result.Success ) {
-				Console.WriteLine($"Failed to load state report '{reportName}' for broker '{broker.Name}': {string.Join("\n", result.Errors)}");
+				_logger.WriteLine($"Failed to load state report '{reportName}' for broker '{broker.Name}': {string.Join("\n", result.Errors)}");
 				return false;
 			}
 			var date = DateOnly.FromDateTime(result.Date);
@@ -264,7 +273,7 @@ namespace InvestmentAnalyzer.DesktopClient.Services {
 				State.Periods.Add(date);
 			}
 			State.Portfolio.Add(portfolioState);
-			Console.WriteLine($"Import state '{reportName}' for broker '{broker.Name}' finished");
+			_logger.WriteLine($"Import state '{reportName}' for broker '{broker.Name}' finished");
 			var requiredCurrencyCodes = entries
 				.Select(e => e.Currency)
 				.Where(c => c != "RUB")
@@ -274,10 +283,10 @@ namespace InvestmentAnalyzer.DesktopClient.Services {
 		}
 
 		async Task<bool> TryImportOperationReport(BrokerState broker, string reportName, Stream? stream) {
-			Console.WriteLine($"Importing operations '{reportName}' for broker '{broker.Name}'");
+			_logger.WriteLine($"Importing operations '{reportName}' for broker '{broker.Name}'");
 			var result = OperationImporter.LoadOperationsByFormat(stream, broker.OperationsFormat);
 			if ( !result.Success ) {
-				Console.WriteLine($"Failed to load state report '{reportName}' for broker '{broker.Name}': {string.Join("\n", result.Errors)}");
+				_logger.WriteLine($"Failed to load state report '{reportName}' for broker '{broker.Name}': {string.Join("\n", result.Errors)}");
 				return false;
 			}
 			var date = DateOnly.FromDateTime(result.Date);
@@ -294,7 +303,7 @@ namespace InvestmentAnalyzer.DesktopClient.Services {
 				State.Periods.Add(date);
 			}
 			State.OperationStates.Add(operationState);
-			Console.WriteLine($"Import operations '{reportName}' for broker '{broker.Name}' finished");
+			_logger.WriteLine($"Import operations '{reportName}' for broker '{broker.Name}' finished");
 			var requiredCurrencyCodes = operations
 				.Select(e => e.Currency)
 				.Where(c => c != "RUB")

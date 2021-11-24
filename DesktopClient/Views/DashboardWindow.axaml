@@ -20,5 +20,8 @@
         <Button Command="{Binding ShowBrokers}">Brokers</Button>
         <Button Command="{Binding ShowImportState}">Import State</Button>
         <Button Command="{Binding ShowImportOperations}">Import Operations</Button>
+        <Button Command="{Binding ClearLog}">Clear Log</Button>
+        <Label>Log:</Label>
+        <TextBox IsReadOnly="True" Text="{Binding LogText.Value}" MaxHeight="200"></TextBox>
     </StackPanel>
 </Window>

@@ -9,13 +9,16 @@ using InvestmentAnalyzer.State;
 
 namespace InvestmentAnalyzer.DesktopClient.Services {
 	public sealed class ExchangeService {
-		public ExchangeService() {
+		readonly CustomLogger _logger;
+
+		public ExchangeService(CustomLogger logger) {
+			_logger = logger;
 			Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 		}
 
 		public async Task<IReadOnlyCollection<ExchangeDto>> GetExchanges(DateOnly date) {
 			var url = $"http://www.cbr.ru/scripts/XML_daily.asp?date_req={date:dd/MM/yyyy}";
-			Console.WriteLine($"Read exchanges from '{url}'");
+			_logger.WriteLine($"Read exchanges from '{url}'");
 			var client = new HttpClient();
 			var response = await client.GetStringAsync(url);
 			var xmlDoc = new XmlDocument();
@@ -43,7 +46,7 @@ namespace InvestmentAnalyzer.DesktopClient.Services {
 				}
 				result.Add(new ExchangeDto(date, charCode, nominal, value));
 			}
-			Console.WriteLine($"{result.Count} exchanges found");
+			_logger.WriteLine($"{result.Count} exchanges found");
 			return result.ToArray();
 		}
 	}

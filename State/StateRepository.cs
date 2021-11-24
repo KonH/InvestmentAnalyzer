@@ -15,6 +15,12 @@ namespace InvestmentAnalyzer.State {
 		string StartupPath =>
 			Path.Combine(Path.GetDirectoryName(Process.GetCurrentProcess().MainModule?.FileName) ?? string.Empty, "DesktopClient.Startup.json");
 
+		readonly CustomLogger _logger;
+
+		public StateRepository(CustomLogger logger) {
+			_logger = logger;
+		}
+
 		public void TryCreateState() {
 			if ( File.Exists(FilePath) ) {
 				return;
@@ -58,7 +64,7 @@ namespace InvestmentAnalyzer.State {
 				await JsonSerializer.SerializeAsync(manifestStream, manifest);
 				return true;
 			} catch ( Exception e ) {
-				Console.WriteLine(e);
+				_logger.WriteLine(e.ToString());
 				return false;
 			}
 		}
