@@ -8,5 +8,6 @@ namespace InvestmentAnalyzer.State {
 		SourceList<PortfolioState> Portfolio,
 		SourceList<OperationState> OperationStates,
 		SourceList<PortfolioStateEntry> Entries,
-		SourceList<PortfolioOperationEntry> Operations);
+		SourceList<PortfolioOperationEntry> Operations,
+		SourceList<string> Tags);
 }

@@ -41,5 +41,9 @@
       <DependentUpon>OperationsWindow.axaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="Views\TagManagementWindow.axaml.cs">
+      <DependentUpon>TagManagementWindow.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
 </Project>

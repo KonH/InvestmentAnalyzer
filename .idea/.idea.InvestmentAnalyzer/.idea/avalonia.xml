@@ -17,6 +17,7 @@
         <entry key="DesktopClient/Views/MainWindow.axaml" value="DesktopClient/DesktopClient.csproj" />
         <entry key="DesktopClient/Views/OperationsWindow.axaml" value="DesktopClient/DesktopClient.csproj" />
         <entry key="DesktopClient/Views/StateChooseWindow.axaml" value="DesktopClient/DesktopClient.csproj" />
+        <entry key="DesktopClient/Views/TagManagementWindow.axaml" value="DesktopClient/DesktopClient.csproj" />
       </map>
     </option>
   </component>

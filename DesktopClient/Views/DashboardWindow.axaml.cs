@@ -21,6 +21,7 @@ namespace InvestmentAnalyzer.DesktopClient.Views {
 				ViewModel?.ShowAssetPlotWindow.RegisterHandler(ShowAssetPlotWindow);
 				ViewModel?.ShowOperationsWindow.RegisterHandler(ShowOperationsWindow);
 				ViewModel?.ShowBrokerManagementWindow.RegisterHandler(ShowBrokerManagementWindow);
+				ViewModel?.ShowTagManagementWindow.RegisterHandler(ShowTagManagementWindow);
 				ViewModel?.ShowImportStateManagementWindow.RegisterHandler(ShowImportStateManagementWindow);
 				ViewModel?.ShowImportOperationsManagementWindow.RegisterHandler(ShowImportOperationsManagementWindow);
 			});
@@ -55,10 +56,18 @@ namespace InvestmentAnalyzer.DesktopClient.Views {
 		}
 
 		void ShowBrokerManagementWindow(InteractionContext<Unit, Unit> interaction) {
-			var assetStateWindow = new BrokerManagementWindow {
+			var brokerWindow = new BrokerManagementWindow {
 				ViewModel = new BrokerManagementWindowViewModel(Locator.Current.GetService<StateManager>())
 			};
-			assetStateWindow.Show(this);
+			brokerWindow.Show(this);
+			interaction.SetOutput(Unit.Default);
+		}
+
+		void ShowTagManagementWindow(InteractionContext<Unit, Unit> interaction) {
+			var tagWindow = new TagManagementWindow {
+				ViewModel = new TagManagementWindowViewModel(Locator.Current.GetService<StateManager>())
+			};
+			tagWindow.Show(this);
 			interaction.SetOutput(Unit.Default);
 		}
 

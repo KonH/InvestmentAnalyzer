@@ -19,7 +19,8 @@ namespace InvestmentAnalyzer.DesktopClient.Services {
 			new SourceList<PortfolioState>(),
 			new SourceList<OperationState>(),
 			new SourceList<PortfolioStateEntry>(),
-			new SourceList<PortfolioOperationEntry>());
+			new SourceList<PortfolioOperationEntry>(),
+			new SourceList<string>());
 
 		public ObservableCollection<string> LogLines => _logger.Lines;
 
@@ -71,6 +72,7 @@ namespace InvestmentAnalyzer.DesktopClient.Services {
 			foreach ( var broker in newBrokers ) {
 				State.Brokers.Add(broker);
 			}
+			State.Tags.AddRange(_manifest.Tags);
 			await SaveManifest();
 			await SaveStartup();
 			return true;
@@ -220,6 +222,20 @@ namespace InvestmentAnalyzer.DesktopClient.Services {
 				.Select(g =>
 					new AssetPriceMeasurement(g.Key.ToDateTime(TimeOnly.MinValue), CalculateSum(g), GetCumulativeFunds(g.Key)))
 				.ToArray();
+
+		public async Task AddTag(string tag) {
+			State.Tags.Add(tag);
+			AssertManifest();
+			_manifest.Tags.Add(tag);
+			await SaveManifest();
+		}
+
+		public async Task RemoveTag(string tag) {
+			State.Tags.Remove(tag);
+			AssertManifest();
+			_manifest.Tags.Remove(tag);
+			await SaveManifest();
+		}
 
 		decimal CalculateSum(IEnumerable<PortfolioStateEntry> entries) =>
 			entries.Sum(GetConvertedPrice);

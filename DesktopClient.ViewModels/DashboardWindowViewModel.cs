@@ -13,6 +13,7 @@ namespace InvestmentAnalyzer.DesktopClient.ViewModels {
 		public ReactiveCommand ShowAssetPlot { get; }
 		public ReactiveCommand ShowOperations { get; }
 		public ReactiveCommand ShowBrokers { get; }
+		public ReactiveCommand ShowTags { get; }
 		public ReactiveCommand ShowImportState { get; }
 		public ReactiveCommand ShowImportOperations { get; }
 		public ReactiveCommand ClearLog { get; }
@@ -24,6 +25,7 @@ namespace InvestmentAnalyzer.DesktopClient.ViewModels {
 		public Interaction<Unit, Unit> ShowAssetPlotWindow { get; } = new();
 		public Interaction<Unit, Unit> ShowOperationsWindow { get; } = new();
 		public Interaction<Unit, Unit> ShowBrokerManagementWindow { get; } = new();
+		public Interaction<Unit, Unit> ShowTagManagementWindow { get; } = new();
 		public Interaction<Unit, Unit> ShowImportStateManagementWindow { get; } = new();
 		public Interaction<Unit, Unit> ShowImportOperationsManagementWindow { get; } = new();
 
@@ -45,6 +47,10 @@ namespace InvestmentAnalyzer.DesktopClient.ViewModels {
 			ShowBrokers = new ReactiveCommand();
 			ShowBrokers
 				.Select(async _ => await ShowBrokerManagementWindow.Handle(Unit.Default))
+				.Subscribe();
+			ShowTags = new ReactiveCommand();
+			ShowTags
+				.Select(async _ => await ShowTagManagementWindow.Handle(Unit.Default))
 				.Subscribe();
 			ShowImportState = new ReactiveCommand();
 			ShowImportState
