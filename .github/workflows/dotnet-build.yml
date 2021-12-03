@@ -1,10 +1,7 @@
 name: .NET Build
 
 on:
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
+  workflow_dispatch:
 
 jobs:
   build:
@@ -45,7 +42,9 @@ jobs:
       with:
         name: InvestmentAnalyzer.win-x64
         path: DesktopClient/bin/Release/net6.0/win-x64/publish/
+        retention-days: 1
     - uses: actions/upload-artifact@v2
       with:
         name: InvestmentAnalyzer.osx-x64
         path: DesktopClient/bin/Release/net6.0/osx-x64/publish/
+        retention-days: 1
