@@ -21,6 +21,33 @@
             </ComboBox>
             <Button Command="{Binding RemoveSelectedTag}">Remove Selected Tag</Button>
         </StackPanel>
+
+        <DataGrid SelectedItem="{Binding SelectedAsset.Value}" Items="{Binding AssetTags}" AutoGenerateColumns="False" Height="250">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="ISIN" Binding="{Binding Isin}" IsReadOnly="True"></DataGridTextColumn>
+                <DataGridTextColumn Header="Name" Binding="{Binding Name}" IsReadOnly="True"></DataGridTextColumn>
+                <DataGridTextColumn Header="Name" Binding="{Binding Currency}" IsReadOnly="True"></DataGridTextColumn>
+                <DataGridTemplateColumn Header="Tags">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <ItemsControl Items="{Binding Tags}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                            </ItemsControl>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+            <DataGrid.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Add Selected Tag" Command="{Binding AddSelectedAssetTag}"></MenuItem>
+                    <MenuItem Header="Remove Selected Tag" Command="{Binding RemoveSelectedAssetTag}"></MenuItem>
+                </ContextMenu>
+            </DataGrid.ContextMenu>
+        </DataGrid>
     </StackPanel>
 
 </Window>

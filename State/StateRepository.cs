@@ -61,7 +61,10 @@ namespace InvestmentAnalyzer.State {
 			await using var manifestStream = stateEntry.Open();
 			manifestStream.SetLength(0);
 			try {
-				await JsonSerializer.SerializeAsync(manifestStream, manifest);
+				var options = new JsonSerializerOptions {
+					WriteIndented = true
+				};
+				await JsonSerializer.SerializeAsync(manifestStream, manifest, options);
 				return true;
 			} catch ( Exception e ) {
 				_logger.WriteLine(e.ToString());

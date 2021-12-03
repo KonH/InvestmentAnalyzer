@@ -20,7 +20,8 @@ namespace InvestmentAnalyzer.DesktopClient.Services {
 			new SourceList<OperationState>(),
 			new SourceList<PortfolioStateEntry>(),
 			new SourceList<PortfolioOperationEntry>(),
-			new SourceList<string>());
+			new SourceList<string>(),
+			new SourceList<AssetTagState>());
 
 		public ObservableCollection<string> LogLines => _logger.Lines;
 
@@ -224,6 +225,9 @@ namespace InvestmentAnalyzer.DesktopClient.Services {
 				.ToArray();
 
 		public async Task AddTag(string tag) {
+			if ( State.Tags.Items.Contains(tag) ) {
+				return;
+			}
 			State.Tags.Add(tag);
 			AssertManifest();
 			_manifest.Tags.Add(tag);
@@ -235,6 +239,47 @@ namespace InvestmentAnalyzer.DesktopClient.Services {
 			AssertManifest();
 			_manifest.Tags.Remove(tag);
 			await SaveManifest();
+		}
+
+		public void EnsureAssetTags() {
+			AssertManifest();
+			foreach ( var asset in State.Entries.Items ) {
+				var assetTagState = State.AssetTags.Items.FirstOrDefault(a => a.Isin == asset.Isin);
+				if ( assetTagState != null ) {
+					continue;
+				}
+				assetTagState = new AssetTagState(asset.Isin, asset.Name, asset.Currency, new SourceList<string>());
+				var assetTags = _manifest.AssetTags.TryGetValue(asset.Isin, out var tags)
+					? tags
+					: new List<string>();
+				assetTagState.Tags.AddRange(assetTags);
+				State.AssetTags.Add(assetTagState);
+			}
+		}
+
+		public async Task AddAssetTag(string isin, string tag) {
+			var assetTagState = State.AssetTags.Items.First(a => a.Isin == isin);
+			assetTagState.Tags.Add(tag);
+			AssertManifest();
+			if ( !_manifest.AssetTags.TryGetValue(isin, out var tags) ) {
+				tags = new List<string>();
+				_manifest.AssetTags.Add(isin, tags);
+			}
+			if ( tags.Contains(tag) ) {
+				return;
+			}
+			tags.Add(tag);
+			await SaveManifest();
+		}
+
+		public async Task RemoveAssetTag(string isin, string tag) {
+			var assetTagState = State.AssetTags.Items.First(a => a.Isin == isin);
+			assetTagState.Tags.Remove(tag);
+			AssertManifest();
+			if ( _manifest.AssetTags.TryGetValue(isin, out var tags) ) {
+				tags.Remove(tag);
+				await SaveManifest();
+			}
 		}
 
 		decimal CalculateSum(IEnumerable<PortfolioStateEntry> entries) =>
