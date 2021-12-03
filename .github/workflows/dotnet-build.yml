@@ -23,7 +23,16 @@ jobs:
       run: dotnet build --no-restore
     - name: Test
       run: dotnet test --no-build --verbosity normal
-    - name: Publish
+    - name: Publish (WIN)
+      run: >
+        dotnet publish DesktopClient/DesktopClient.csproj
+        -c Release
+        -r win-x64
+        -p:PublishReadyToRun=true
+        -p:PublishSingleFile=true
+        -p:IncludeNativeLibrariesForSelfExtract=true
+        --self-contained true
+    - name: Publish (OSX)
       run: >
         dotnet publish DesktopClient/DesktopClient.csproj
         -c Release
@@ -32,6 +41,10 @@ jobs:
         -p:PublishSingleFile=true
         -p:IncludeNativeLibrariesForSelfExtract=true
         --self-contained true
+    - uses: actions/upload-artifact@v2
+      with:
+        name: InvestmentAnalyzer.win-x64
+        path: DesktopClient/bin/Release/net6.0/win-x64/publish/
     - uses: actions/upload-artifact@v2
       with:
         name: InvestmentAnalyzer.osx-x64
