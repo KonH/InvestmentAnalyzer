@@ -31,7 +31,7 @@ namespace InvestmentAnalyzer.DesktopClient.ViewModels {
 			OpenState
 				.Select(async _ => {
 					var result = await ShowOpenFileDialog.Handle(new OpenFileDialogOptions(
-						false, new FileDialogFilter { Extensions = new List<string> { "zip" } }));
+						false, new FileDialogFilter { Name = "Filter", Extensions = new List<string> { "zip" } }));
 					var path = result.First();
 					var isInitialized = await _manager.Initialize(path, false);
 					if ( isInitialized ) {
