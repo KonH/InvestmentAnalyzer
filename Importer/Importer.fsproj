@@ -11,6 +11,8 @@
         <Compile Include="XmlUtils.fs" />
         <Compile Include="PdfUtils.fs" />
         <Compile Include="AlphaDirectState.fs" />
+        <Compile Include="LegacyAlphaDirectOperations.fs" />
+        <Compile Include="ActualAlphaDirectOperations.fs" />
         <Compile Include="AlphaDirectOperations.fs" />
         <Compile Include="TinkoffState.fs" />
         <Compile Include="TinkoffOperations.fs" />

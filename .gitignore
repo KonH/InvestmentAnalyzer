@@ -2,3 +2,5 @@
 **/obj
 .DS_Store
 .vs
+DesktopClient.UnitTests/AlphaDirectOperations_Old.xml
+DesktopClient.UnitTests/AlphaDirectOperations_New.xml
