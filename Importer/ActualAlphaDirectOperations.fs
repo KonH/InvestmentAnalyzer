@@ -46,6 +46,7 @@ let detectType operationType (comment: string) =
         | _ when comment.StartsWith("Списание") -> Out
         | _ -> Ignored
     | _ -> Ignored
+    |> (fun t -> t.ToString())
 
 let loadNode (node: XmlNode) =
     result {

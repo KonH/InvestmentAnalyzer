@@ -56,7 +56,7 @@ let handleOperationRow (columns: OperationColumns) (currency: string) (row: IXLR
         let volume = if income then sum else -sum
         Some {
             Date = date
-            Type = operationType
+            Type = operationType.ToString()
             Currency = currency
             Volume = volume
         }

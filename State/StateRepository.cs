@@ -44,27 +44,38 @@ namespace InvestmentAnalyzer.State {
 			await JsonSerializer.SerializeAsync(stream, startup);
 		}
 
-		public async Task<AppManifest> LoadOrCreateManifest() {
+		public async Task<AppManifest> LoadOrCreateManifest() =>
+			await LoadOrCreate<AppManifest>(ManifestFileName);
+
+		public async Task<T> LoadOrCreate<T>(string path) where T : class, new() {
 			using var zipArchive = LoadArchive();
-			var stateEntry = zipArchive.GetEntry(ManifestFileName);
+			var stateEntry = zipArchive.GetEntry(path);
 			if ( stateEntry == null ) {
-				return new AppManifest();
+				return new T();
 			}
-			await using var manifestStream = stateEntry.Open();
-			var manifest = await JsonSerializer.DeserializeAsync<AppManifest>(manifestStream);
-			return manifest ?? new AppManifest();
+			await using var stream = stateEntry.Open();
+			try {
+				var obj = await JsonSerializer.DeserializeAsync<T>(stream);
+				return obj ?? new T();
+			} catch ( Exception e ) {
+				_logger.WriteLine(e.ToString());
+				return new T();
+			}
 		}
 
-		public async Task<bool> SaveManifest(AppManifest manifest) {
+		public async Task<bool> SaveManifest(AppManifest manifest) =>
+			await Save(ManifestFileName, manifest);
+
+		public async Task<bool> Save<T>(string path, T obj) where T : class {
 			using var zipArchive = LoadArchive();
-			var stateEntry = zipArchive.GetEntry(ManifestFileName) ?? zipArchive.CreateEntry(ManifestFileName);
-			await using var manifestStream = stateEntry.Open();
-			manifestStream.SetLength(0);
+			var entry = zipArchive.GetEntry(path) ?? zipArchive.CreateEntry(path);
+			await using var stream = entry.Open();
+			stream.SetLength(0);
 			try {
 				var options = new JsonSerializerOptions {
 					WriteIndented = true
 				};
-				await JsonSerializer.SerializeAsync(manifestStream, manifest, options);
+				await JsonSerializer.SerializeAsync(stream, obj, options);
 				return true;
 			} catch ( Exception e ) {
 				_logger.WriteLine(e.ToString());

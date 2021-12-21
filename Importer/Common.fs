@@ -18,7 +18,7 @@ type OperationType =
 
 type OperationEntry = {
     Date: DateTime
-    Type: OperationType
+    Type: string
     Currency: string
     Volume: decimal
 }

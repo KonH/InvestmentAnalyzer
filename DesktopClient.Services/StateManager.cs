@@ -27,6 +27,7 @@ namespace InvestmentAnalyzer.DesktopClient.Services {
 
 		readonly CustomLogger _logger = new();
 		readonly StateRepository _repository;
+		readonly ImportService _importService;
 		readonly ExchangeService _exchangeService;
 
 		AppStartup? _startup;
@@ -34,6 +35,7 @@ namespace InvestmentAnalyzer.DesktopClient.Services {
 
 		public StateManager() {
 			_repository = new StateRepository(_logger);
+			_importService = new ImportService(_repository);
 			_exchangeService = new ExchangeService(_logger);
 		}
 
@@ -61,13 +63,13 @@ namespace InvestmentAnalyzer.DesktopClient.Services {
 					b.OperationsFormat))
 				.ToArray();
 			foreach ( var broker in newBrokers ) {
-				var stateReports = await LoadStateReports(broker.Name);
-				foreach ( var (reportName, stream) in stateReports ) {
-					await TryImportStateReport(broker, reportName, stream);
+				var stateReports = LoadStateReports(broker.Name);
+				foreach ( var reportPath in stateReports ) {
+					await TryImportStateReport(broker, reportPath);
 				}
-				var operationReports = await LoadOperationReports(broker.Name);
-				foreach ( var (reportName, stream) in operationReports ) {
-					await TryImportOperationReport(broker, reportName, stream);
+				var operationReports = LoadOperationReports(broker.Name);
+				foreach ( var reportPath in operationReports ) {
+					await TryImportOperationReport(broker, reportPath);
 				}
 			}
 			foreach ( var broker in newBrokers ) {
@@ -130,8 +132,7 @@ namespace InvestmentAnalyzer.DesktopClient.Services {
 				var reportName = Path.GetFileName(path);
 				var reportPath = $"Reports/{brokerName}/{reportName}";
 				await _repository.AddEntry(path, reportPath);
-				var stream = await _repository.TryLoadAsMemoryStream(reportPath);
-				if ( await TryImportStateReport(brokerState, reportName, stream) ) {
+				if ( await TryImportStateReport(brokerState, reportPath) ) {
 					brokerManifest.Reports.Add(reportName, reportPath);
 					await SaveManifest();
 				} else {
@@ -155,8 +156,7 @@ namespace InvestmentAnalyzer.DesktopClient.Services {
 				var reportName = Path.GetFileName(path);
 				var reportPath = $"Reports/{brokerName}/{reportName}";
 				await _repository.AddEntry(path, reportPath);
-				var stream = await _repository.TryLoadAsMemoryStream(reportPath);
-				if ( await TryImportOperationReport(brokerState, reportName, stream) ) {
+				if ( await TryImportOperationReport(brokerState, reportPath) ) {
 					brokerManifest.OperationReports.Add(reportName, reportPath);
 					await SaveManifest();
 				} else {
@@ -314,11 +314,11 @@ namespace InvestmentAnalyzer.DesktopClient.Services {
 			return targetPrice;
 		}
 
-		async Task<bool> TryImportStateReport(BrokerState broker, string reportName, Stream? stream) {
-			_logger.WriteLine($"Importing state '{reportName}' for broker '{broker.Name}'");
-			var result = StateImporter.LoadStateByFormat(stream, broker.StateFormat);
+		async Task<bool> TryImportStateReport(BrokerState broker, string reportPath) {
+			_logger.WriteLine($"Importing state '{reportPath}' for broker '{broker.Name}'");
+			var result = await _importService.LoadStateByFormat(reportPath, broker.StateFormat);
 			if ( !result.Success ) {
-				_logger.WriteLine($"Failed to load state report '{reportName}' for broker '{broker.Name}': {string.Join("\n", result.Errors)}");
+				_logger.WriteLine($"Failed to load state report '{reportPath}' for broker '{broker.Name}': {string.Join("\n", result.Errors)}");
 				return false;
 			}
 			var date = DateOnly.FromDateTime(result.Date);
@@ -329,12 +329,12 @@ namespace InvestmentAnalyzer.DesktopClient.Services {
 			foreach ( var e in entries ) {
 				State.Entries.Add(e);
 			}
-			var portfolioState = new PortfolioState(broker.Name, date, reportName);
+			var portfolioState = new PortfolioState(broker.Name, date, reportPath);
 			if ( !State.Periods.Items.Contains(date) ) {
 				State.Periods.Add(date);
 			}
 			State.Portfolio.Add(portfolioState);
-			_logger.WriteLine($"Import state '{reportName}' for broker '{broker.Name}' finished");
+			_logger.WriteLine($"Import state '{reportPath}' for broker '{broker.Name}' finished");
 			var requiredCurrencyCodes = entries
 				.Select(e => e.Currency)
 				.Where(c => c != "RUB")
@@ -343,28 +343,28 @@ namespace InvestmentAnalyzer.DesktopClient.Services {
 			return await TryAddRequiredExchanges(date, requiredCurrencyCodes);
 		}
 
-		async Task<bool> TryImportOperationReport(BrokerState broker, string reportName, Stream? stream) {
-			_logger.WriteLine($"Importing operations '{reportName}' for broker '{broker.Name}'");
-			var result = OperationImporter.LoadOperationsByFormat(stream, broker.OperationsFormat);
+		async Task<bool> TryImportOperationReport(BrokerState broker, string reportPath) {
+			_logger.WriteLine($"Importing operations '{reportPath}' for broker '{broker.Name}'");
+			var result = await _importService.LoadOperationsByFormat(reportPath, broker.OperationsFormat);
 			if ( !result.Success ) {
-				_logger.WriteLine($"Failed to load state report '{reportName}' for broker '{broker.Name}': {string.Join("\n", result.Errors)}");
+				_logger.WriteLine($"Failed to load state report '{reportPath}' for broker '{broker.Name}': {string.Join("\n", result.Errors)}");
 				return false;
 			}
 			var date = DateOnly.FromDateTime(result.Date);
 			var operations = result.Operations
-				.Where(e => e.Type.Tag is not Common.OperationType.Tags.Ignored)
+				.Where(e => e.Type is not "Ignored")
 				.Select(e => new PortfolioOperationEntry(
 					date, broker.Name, e.Type.ToString(), e.Currency, e.Volume))
 				.ToList();
 			foreach ( var e in operations ) {
 				State.Operations.Add(e);
 			}
-			var operationState = new OperationState(broker.Name, date, reportName);
+			var operationState = new OperationState(broker.Name, date, reportPath);
 			if ( !State.Periods.Items.Contains(date) ) {
 				State.Periods.Add(date);
 			}
 			State.OperationStates.Add(operationState);
-			_logger.WriteLine($"Import operations '{reportName}' for broker '{broker.Name}' finished");
+			_logger.WriteLine($"Import operations '{reportPath}' for broker '{broker.Name}' finished");
 			var requiredCurrencyCodes = operations
 				.Select(e => e.Currency)
 				.Where(c => c != "RUB")
@@ -405,38 +405,23 @@ namespace InvestmentAnalyzer.DesktopClient.Services {
 			return await _repository.SaveManifest(_manifest);
 		}
 
-		async Task<IReadOnlyDictionary<string, Stream?>> LoadStateReports(string brokerName) {
+		IReadOnlyCollection<string> LoadStateReports(string brokerName) {
 			AssertManifest();
 			var brokerManifest = _manifest.Brokers.FirstOrDefault(b => b.Name == brokerName);
 			if ( brokerManifest == null ) {
-				return new Dictionary<string, Stream?>();
+				return Array.Empty<string>();
 			}
-			var tasks = brokerManifest.Reports
-				.ToDictionary(
-					p => p.Key,
-					p => TryLoadReport(p.Value));
-			await Task.WhenAll(tasks.Values);
-			return tasks
-				.ToDictionary(p => p.Key, p => p.Value.Result);
+			return brokerManifest.Reports.Values;
 		}
 
-		async Task<IReadOnlyDictionary<string, Stream?>> LoadOperationReports(string brokerName) {
+		IReadOnlyCollection<string> LoadOperationReports(string brokerName) {
 			AssertManifest();
 			var brokerManifest = _manifest.Brokers.FirstOrDefault(b => b.Name == brokerName);
 			if ( brokerManifest == null ) {
-				return new Dictionary<string, Stream?>();
+				return Array.Empty<string>();
 			}
-			var tasks = brokerManifest.OperationReports
-				.ToDictionary(
-					p => p.Key,
-					p => TryLoadReport(p.Value));
-			await Task.WhenAll(tasks.Values);
-			return tasks
-				.ToDictionary(p => p.Key, p => p.Value.Result);
+			return brokerManifest.OperationReports.Values;
 		}
-
-		async Task<Stream?> TryLoadReport(string reportFilePath) =>
-			await _repository.TryLoadAsMemoryStream(reportFilePath);
 
 		[MemberNotNull(nameof(_startup))]
 		void AssertStartup() {
