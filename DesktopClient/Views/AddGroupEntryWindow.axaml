@@ -1,0 +1,24 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:viewModels="clr-namespace:InvestmentAnalyzer.DesktopClient.ViewModels;assembly=DesktopClient.ViewModels"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="InvestmentAnalyzer.DesktopClient.Views.AddGroupEntryWindow"
+        Title="AddGroupEntryWindow">
+
+    <Design.DataContext>
+        <viewModels:AddGroupEntryWindowViewModel/>
+    </Design.DataContext>
+
+    <StackPanel Margin="10" Spacing="5">
+        <StackPanel Orientation="Horizontal" Spacing="5">
+            <TextBlock >Tag:</TextBlock>
+            <ComboBox SelectedItem="{Binding Tag.Value}" Items="{Binding Tags}"></ComboBox>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Spacing="5">
+            <Button Command="{Binding Add}">Add</Button>
+            <Button Command="{Binding Cancel}">Cancel</Button>
+        </StackPanel>
+    </StackPanel>
+</Window>

@@ -13,15 +13,7 @@ using InvestmentAnalyzer.State.Persistant;
 
 namespace InvestmentAnalyzer.DesktopClient.Services {
 	public sealed class StateManager {
-		public AppState State { get; } = new(
-			new SourceList<BrokerState>(),
-			new SourceList<DateOnly>(),
-			new SourceList<PortfolioState>(),
-			new SourceList<OperationState>(),
-			new SourceList<PortfolioStateEntry>(),
-			new SourceList<PortfolioOperationEntry>(),
-			new SourceList<string>(),
-			new SourceList<AssetTagState>());
+		public AppState State { get; } = new();
 
 		public ObservableCollection<string> LogLines => _logger.Lines;
 
@@ -34,9 +26,9 @@ namespace InvestmentAnalyzer.DesktopClient.Services {
 		AppManifest? _manifest;
 
 		public StateManager() {
-			_repository = new StateRepository(_logger);
-			_importService = new ImportService(_repository);
-			_exchangeService = new ExchangeService(_logger);
+			_repository = new(_logger);
+			_importService = new(_repository);
+			_exchangeService = new(_logger);
 		}
 
 		public async Task<bool> TryInitialize() {
@@ -55,7 +47,6 @@ namespace InvestmentAnalyzer.DesktopClient.Services {
 				return false;
 			}
 			AssertManifest();
-			State.Brokers.Clear();
 			var newBrokers = _manifest.Brokers
 				.Select(b => new BrokerState(
 					b.Name,
@@ -76,6 +67,12 @@ namespace InvestmentAnalyzer.DesktopClient.Services {
 				State.Brokers.Add(broker);
 			}
 			State.Tags.AddRange(_manifest.Tags);
+			foreach ( var (group, groupEntries) in _manifest.Groups ) {
+				State.Groups.Add(new(group));
+				var entries = groupEntries
+					.Select(p => new GroupStateEntry(group, p.Key, p.Value));
+				State.GroupEntries.AddRange(entries);
+			}
 			await SaveManifest();
 			await SaveStartup();
 			return true;
@@ -282,6 +279,63 @@ namespace InvestmentAnalyzer.DesktopClient.Services {
 			}
 		}
 
+		public async Task AddNewGroup(string name) {
+			if ( State.Groups.Items.Any(g => g.Name == name) ) {
+				return;
+			}
+			State.Groups.Add(new(name));
+			AssertManifest();
+			_manifest.Groups.Add(name, new());
+			await SaveManifest();
+		}
+
+		public async Task RemoveGroup(string name) {
+			var groups = State.Groups.Items.Where(g => g.Name == name);
+			State.Groups.RemoveMany(groups);
+			var entries = State.GroupEntries.Items.Where(e => e.Group == name);
+			State.GroupEntries.RemoveMany(entries);
+			AssertManifest();
+			_manifest.Groups.Remove(name);
+			await SaveManifest();
+		}
+
+		public async Task AddNewGroupEntry(string group, string tag, decimal target) {
+			if ( State.GroupEntries.Items.Any(e => IsTargetGroupEntry(e, group, tag)) ) {
+				return;
+			}
+			State.GroupEntries.Add(new(group, tag, target));
+			AssertManifest();
+			if ( _manifest.Groups.TryGetValue(group, out var groupEntries) ) {
+				groupEntries.Add(tag, target);
+				await SaveManifest();
+			}
+		}
+
+		public async Task UpdateGroupEntry(string group, string tag, decimal target) {
+			var entries = State.GroupEntries.Items.Where(e => IsTargetGroupEntry(e, group, tag));
+			foreach ( var entry in entries ) {
+				entry.Target = target;
+			}
+			AssertManifest();
+			if ( _manifest.Groups.TryGetValue(group, out var groupEntries) ) {
+				groupEntries[tag] = target;
+				await SaveManifest();
+			}
+		}
+
+		public async Task RemoveGroupEntry(string group, string tag) {
+			var entries = State.GroupEntries.Items.Where(e => IsTargetGroupEntry(e, group, tag));
+			State.GroupEntries.RemoveMany(entries);
+			AssertManifest();
+			if ( _manifest.Groups.TryGetValue(group, out var groupEntries) ) {
+				groupEntries.Remove(tag);
+				await SaveManifest();
+			}
+		}
+
+		bool IsTargetGroupEntry(GroupStateEntry entry, string group, string tag) =>
+			entry.Group == group && entry.Tag == tag;
+
 		decimal CalculateSum(IEnumerable<PortfolioStateEntry> entries) =>
 			entries.Sum(GetConvertedPrice);
 
@@ -302,7 +356,7 @@ namespace InvestmentAnalyzer.DesktopClient.Services {
 		decimal GetConvertedPrice(PortfolioOperationEntry entry) =>
 			GetConvertedPrice(entry.Currency, entry.Volume, entry.Date);
 
-		decimal GetConvertedPrice(string currency, decimal sourcePrice, DateOnly date) {
+		public decimal GetConvertedPrice(string currency, decimal sourcePrice, DateOnly date) {
 			if ( currency == "RUB" ) {
 				return sourcePrice;
 			}

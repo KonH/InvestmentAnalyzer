@@ -1,0 +1,53 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:viewModels="clr-namespace:InvestmentAnalyzer.DesktopClient.ViewModels;assembly=DesktopClient.ViewModels"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="InvestmentAnalyzer.DesktopClient.Views.GroupManagementWindow"
+        Title="DesktopClient">
+
+    <Design.DataContext>
+        <viewModels:GroupManagementWindowViewModel />
+    </Design.DataContext>
+
+    <StackPanel Spacing="5" Margin="10">
+        <StackPanel Orientation="Horizontal" Spacing="5">
+            <ComboBox Items="{Binding Groups}" SelectedItem="{Binding SelectedGroup.Value}">
+            </ComboBox>
+        </StackPanel>
+        <Button Command="{Binding AddNewGroup}">Add new group</Button>
+        <Button Command="{Binding RemoveSelectedGroup}">Remove selected group</Button>
+        <Label>Selected group target:</Label>
+        <TextBlock Text="{Binding SelectedGroupTarget.Value}"></TextBlock>
+        <ItemsControl Items="{Binding SelectedGroupEntries}">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="{Binding Tag}"></TextBlock>
+                        <Label>Target:</Label>
+                        <TextBox Text="{Binding Target.Value}"></TextBox>
+                        <Button Command="{Binding RemoveEntry}">Remove entry</Button>
+                    </StackPanel>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+        <Button Command="{Binding AddNewEntry}">Add new entry</Button>
+        <StackPanel Orientation="Horizontal">
+            <TextBlock>Unused tags (</TextBlock>
+            <TextBlock Text="{Binding UnusedTagsCount.Value}"/>
+            <TextBlock>): </TextBlock>
+            <TextBlock Text="{Binding UnusedTagsString.Value}"/>
+        </StackPanel>
+        <DataGrid Items="{Binding SelectedGroupPortfolio}" AutoGenerateColumns="False">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Tag" Binding="{Binding Tag}"></DataGridTextColumn>
+                <DataGridTextColumn Header="Price" Binding="{Binding Price}"></DataGridTextColumn>
+                <DataGridTextColumn Header="Target" Binding="{Binding Target}"></DataGridTextColumn>
+                <DataGridTextColumn Header="Actual Ratio" Binding="{Binding ActualRatio}"></DataGridTextColumn>
+                <DataGridTextColumn Header="Diff" Binding="{Binding Diff}"></DataGridTextColumn>
+                <DataGridTextColumn Header="Assets" Binding="{Binding  Assets}"></DataGridTextColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+    </StackPanel>
+</Window>

@@ -19,6 +19,7 @@
         <Button Command="{Binding ShowOperations}">Operations</Button>
         <Button Command="{Binding ShowBrokers}">Brokers</Button>
         <Button Command="{Binding ShowTags}">Tags</Button>
+        <Button Command="{Binding ShowGroups}">Groups</Button>
         <Button Command="{Binding ShowImportState}">Import State</Button>
         <Button Command="{Binding ShowImportOperations}">Import Operations</Button>
         <Button Command="{Binding ClearLog}">Clear Log</Button>

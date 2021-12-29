@@ -2,13 +2,16 @@ using System;
 using DynamicData;
 
 namespace InvestmentAnalyzer.State {
-	public record AppState(
-		SourceList<BrokerState> Brokers,
-		SourceList<DateOnly> Periods,
-		SourceList<PortfolioState> Portfolio,
-		SourceList<OperationState> OperationStates,
-		SourceList<PortfolioStateEntry> Entries,
-		SourceList<PortfolioOperationEntry> Operations,
-		SourceList<string> Tags,
-		SourceList<AssetTagState> AssetTags);
+	public class AppState {
+		public SourceList<BrokerState> Brokers { get; } = new();
+		public SourceList<DateOnly> Periods { get; } = new();
+		public SourceList<PortfolioState> Portfolio { get; } = new();
+		public SourceList<OperationState> OperationStates { get; } = new();
+		public SourceList<PortfolioStateEntry> Entries { get; } = new();
+		public SourceList<PortfolioOperationEntry> Operations { get; } = new();
+		public SourceList<string> Tags { get; } = new();
+		public SourceList<AssetTagState> AssetTags { get; } = new();
+		public SourceList<GroupState> Groups { get; } = new();
+		public SourceList<GroupStateEntry> GroupEntries { get; } = new();
+	}
 }

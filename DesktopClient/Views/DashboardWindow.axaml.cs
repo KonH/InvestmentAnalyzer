@@ -1,3 +1,4 @@
+using System;
 using System.Reactive;
 using Avalonia;
 using Avalonia.Markup.Xaml;
@@ -10,20 +11,32 @@ using Splat;
 
 namespace InvestmentAnalyzer.DesktopClient.Views {
 	public class DashboardWindow : ReactiveWindow<DashboardWindowViewModel> {
+		StateManager StateManager => Locator.Current.GetService<StateManager>();
+
 		public DashboardWindow() {
 			InitializeComponent();
 #if DEBUG
 			this.AttachDevTools();
 #endif
 			this.WhenActivated(_ => {
-				ViewModel?.CloseWindow.RegisterHandler(this.CloseWindow);
-				ViewModel?.ShowAssetStateWindow.RegisterHandler(ShowAssetStateWindow);
-				ViewModel?.ShowAssetPlotWindow.RegisterHandler(ShowAssetPlotWindow);
-				ViewModel?.ShowOperationsWindow.RegisterHandler(ShowOperationsWindow);
-				ViewModel?.ShowBrokerManagementWindow.RegisterHandler(ShowBrokerManagementWindow);
-				ViewModel?.ShowTagManagementWindow.RegisterHandler(ShowTagManagementWindow);
-				ViewModel?.ShowImportStateManagementWindow.RegisterHandler(ShowImportStateManagementWindow);
-				ViewModel?.ShowImportOperationsManagementWindow.RegisterHandler(ShowImportOperationsManagementWindow);
+				var vm = ViewModel!;
+				vm.CloseWindow.RegisterHandler(this.CloseWindow);
+				vm.ShowAssetStateWindow.RegisterHandler(
+					ShowWindow<AssetStateWindow, AssetStateWindowViewModel>(() => new(StateManager)));
+				vm.ShowAssetPlotWindow.RegisterHandler(
+					ShowWindow<AssetPlotWindow, AssetPlotWindowViewModel>(() => new(StateManager)));
+				vm.ShowOperationsWindow.RegisterHandler(
+					ShowWindow<OperationsWindow, OperationsWindowViewModel>(() => new(StateManager)));
+				vm.ShowBrokerManagementWindow.RegisterHandler(
+					ShowWindow<BrokerManagementWindow, BrokerManagementWindowViewModel>(() => new(StateManager)));
+				vm.ShowTagManagementWindow.RegisterHandler(
+					ShowWindow<TagManagementWindow, TagManagementWindowViewModel>(() => new(StateManager)));
+				vm.ShowGroupManagementWindow.RegisterHandler(
+					ShowWindow<GroupManagementWindow, GroupManagementWindowViewModel>(() => new(StateManager)));
+				vm.ShowImportStateManagementWindow.RegisterHandler(
+					ShowWindow<ImportStateManagementWindow, ImportStateManagementWindowViewModel>(() => new(StateManager)));
+				vm.ShowImportOperationsManagementWindow.RegisterHandler(
+					ShowWindow<ImportOperationsManagementWindow, ImportOperationsManagementWindowViewModel>(() => new(StateManager)));
 			});
 		}
 
@@ -31,60 +44,15 @@ namespace InvestmentAnalyzer.DesktopClient.Views {
 			AvaloniaXamlLoader.Load(this);
 		}
 
-		void ShowAssetStateWindow(InteractionContext<Unit, Unit> interaction) {
-			var assetStateWindow = new AssetStateWindow {
-				ViewModel = new AssetStateWindowViewModel(Locator.Current.GetService<StateManager>())
+		Action<InteractionContext<Unit, Unit>> ShowWindow<TWindow, TViewModel>(Func<TViewModel> viewModel)
+			where TWindow : ReactiveWindow<TViewModel>, new()
+			where TViewModel : class =>
+			interaction => {
+				var window = new TWindow {
+					ViewModel = viewModel()
+				};
+				window.Show(this);
+				interaction.SetOutput(Unit.Default);
 			};
-			assetStateWindow.Show(this);
-			interaction.SetOutput(Unit.Default);
-		}
-
-		void ShowAssetPlotWindow(InteractionContext<Unit, Unit> interaction) {
-			var assetPlotWindow = new AssetPlotWindow {
-				ViewModel = new AssetPlotWindowViewModel(Locator.Current.GetService<StateManager>())
-			};
-			assetPlotWindow.Show(this);
-			interaction.SetOutput(Unit.Default);
-		}
-
-		void ShowOperationsWindow(InteractionContext<Unit, Unit> interaction) {
-			var operationsWindow = new OperationsWindow {
-				ViewModel = new OperationsWindowViewModel(Locator.Current.GetService<StateManager>())
-			};
-			operationsWindow.Show(this);
-			interaction.SetOutput(Unit.Default);
-		}
-
-		void ShowBrokerManagementWindow(InteractionContext<Unit, Unit> interaction) {
-			var brokerWindow = new BrokerManagementWindow {
-				ViewModel = new BrokerManagementWindowViewModel(Locator.Current.GetService<StateManager>())
-			};
-			brokerWindow.Show(this);
-			interaction.SetOutput(Unit.Default);
-		}
-
-		void ShowTagManagementWindow(InteractionContext<Unit, Unit> interaction) {
-			var tagWindow = new TagManagementWindow {
-				ViewModel = new TagManagementWindowViewModel(Locator.Current.GetService<StateManager>())
-			};
-			tagWindow.Show(this);
-			interaction.SetOutput(Unit.Default);
-		}
-
-		void ShowImportStateManagementWindow(InteractionContext<Unit, Unit> interaction) {
-			var assetStateWindow = new ImportStateManagementWindow {
-				ViewModel = new ImportStateManagementWindowViewModel(Locator.Current.GetService<StateManager>())
-			};
-			assetStateWindow.Show(this);
-			interaction.SetOutput(Unit.Default);
-		}
-
-		void ShowImportOperationsManagementWindow(InteractionContext<Unit, Unit> interaction) {
-			var assetOperationsWindow = new ImportOperationsManagementWindow {
-				ViewModel = new ImportOperationsManagementWindowViewModel(Locator.Current.GetService<StateManager>())
-			};
-			assetOperationsWindow.Show(this);
-			interaction.SetOutput(Unit.Default);
-		}
 	}
 }

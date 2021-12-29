@@ -14,6 +14,7 @@ namespace InvestmentAnalyzer.DesktopClient.ViewModels {
 		public ReactiveCommand ShowOperations { get; }
 		public ReactiveCommand ShowBrokers { get; }
 		public ReactiveCommand ShowTags { get; }
+		public ReactiveCommand ShowGroups { get; }
 		public ReactiveCommand ShowImportState { get; }
 		public ReactiveCommand ShowImportOperations { get; }
 		public ReactiveCommand ClearLog { get; }
@@ -26,40 +27,21 @@ namespace InvestmentAnalyzer.DesktopClient.ViewModels {
 		public Interaction<Unit, Unit> ShowOperationsWindow { get; } = new();
 		public Interaction<Unit, Unit> ShowBrokerManagementWindow { get; } = new();
 		public Interaction<Unit, Unit> ShowTagManagementWindow { get; } = new();
+		public Interaction<Unit, Unit> ShowGroupManagementWindow { get; } = new();
 		public Interaction<Unit, Unit> ShowImportStateManagementWindow { get; } = new();
 		public Interaction<Unit, Unit> ShowImportOperationsManagementWindow { get; } = new();
 
 		public DashboardWindowViewModel(): this(new StateManager()) {}
 
 		public DashboardWindowViewModel(StateManager manager) {
-			ShowAssets = new ReactiveCommand();
-			ShowAssets
-				.Select(async _ => await ShowAssetStateWindow.Handle(Unit.Default))
-				.Subscribe();
-			ShowAssetPlot = new ReactiveCommand();
-			ShowAssetPlot
-				.Select(async _ => await ShowAssetPlotWindow.Handle(Unit.Default))
-				.Subscribe();
-			ShowOperations = new ReactiveCommand();
-			ShowOperations
-				.Select(async _ => await ShowOperationsWindow.Handle(Unit.Default))
-				.Subscribe();
-			ShowBrokers = new ReactiveCommand();
-			ShowBrokers
-				.Select(async _ => await ShowBrokerManagementWindow.Handle(Unit.Default))
-				.Subscribe();
-			ShowTags = new ReactiveCommand();
-			ShowTags
-				.Select(async _ => await ShowTagManagementWindow.Handle(Unit.Default))
-				.Subscribe();
-			ShowImportState = new ReactiveCommand();
-			ShowImportState
-				.Select(async _ => await ShowImportStateManagementWindow.Handle(Unit.Default))
-				.Subscribe();
-			ShowImportOperations = new ReactiveCommand();
-			ShowImportOperations
-				.Select(async _ => await ShowImportOperationsManagementWindow.Handle(Unit.Default))
-				.Subscribe();
+			ShowAssets = BindToWindow(ShowAssetStateWindow);
+			ShowAssetPlot = BindToWindow(ShowAssetPlotWindow);
+			ShowOperations = BindToWindow(ShowOperationsWindow);
+			ShowBrokers = BindToWindow(ShowBrokerManagementWindow);
+			ShowTags = BindToWindow(ShowTagManagementWindow);
+			ShowGroups = BindToWindow(ShowGroupManagementWindow);
+			ShowImportState = BindToWindow(ShowImportStateManagementWindow);
+			ShowImportOperations = BindToWindow(ShowImportOperationsManagementWindow);
 			LogText = new ReactiveProperty<string>(string.Join('\n', manager.LogLines));
 			ClearLog = new ReactiveCommand();
 			ClearLog
@@ -70,6 +52,14 @@ namespace InvestmentAnalyzer.DesktopClient.ViewModels {
 				.Subscribe(v => {
 					LogText.Value += $"\n{v}";
 				});
+		}
+
+		ReactiveCommand BindToWindow(Interaction<Unit, Unit> windowInteraction) {
+			var command = new ReactiveCommand();
+			command
+				.Select(async _ => await windowInteraction.Handle(Unit.Default))
+				.Subscribe();
+			return command;
 		}
 	}
 }
