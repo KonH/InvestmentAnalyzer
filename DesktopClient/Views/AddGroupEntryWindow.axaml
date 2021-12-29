@@ -3,19 +3,18 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:viewModels="clr-namespace:InvestmentAnalyzer.DesktopClient.ViewModels;assembly=DesktopClient.ViewModels"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        mc:Ignorable="d" d:DesignWidth="200" d:DesignHeight="110"
+        Width="200" Height="110"
         x:Class="InvestmentAnalyzer.DesktopClient.Views.AddGroupEntryWindow"
-        Title="AddGroupEntryWindow">
+        Title="Add group entry">
 
     <Design.DataContext>
         <viewModels:AddGroupEntryWindowViewModel/>
     </Design.DataContext>
 
-    <StackPanel Margin="10" Spacing="5">
-        <StackPanel Orientation="Horizontal" Spacing="5">
-            <TextBlock >Tag:</TextBlock>
-            <ComboBox SelectedItem="{Binding Tag.Value}" Items="{Binding Tags}"></ComboBox>
-        </StackPanel>
+    <StackPanel Margin="10" Spacing="5" HorizontalAlignment="Center">
+        <TextBlock>Tag:</TextBlock>
+        <ComboBox SelectedItem="{Binding Tag.Value}" Items="{Binding Tags}"></ComboBox>
         <StackPanel Orientation="Horizontal" Spacing="5">
             <Button Command="{Binding Add}">Add</Button>
             <Button Command="{Binding Cancel}">Cancel</Button>
