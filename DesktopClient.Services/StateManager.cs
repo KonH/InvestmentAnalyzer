@@ -356,7 +356,11 @@ namespace InvestmentAnalyzer.DesktopClient.Services {
 		decimal GetConvertedPrice(PortfolioOperationEntry entry) =>
 			GetConvertedPrice(entry.Currency, entry.Volume, entry.Date);
 
-		public decimal GetConvertedPrice(string currency, decimal sourcePrice, DateOnly date) {
+		decimal GetConvertedPrice(IReadOnlyCollection<PortfolioStateEntry> entries) =>
+			entries
+				.Sum(e => GetConvertedPrice(e.Currency, e.TotalPrice, e.Date));
+
+		decimal GetConvertedPrice(string currency, decimal sourcePrice, DateOnly date) {
 			if ( currency == "RUB" ) {
 				return sourcePrice;
 			}
@@ -367,6 +371,41 @@ namespace InvestmentAnalyzer.DesktopClient.Services {
 			var targetPrice = sourcePrice * (targetExchange.Value / targetExchange.Nominal);
 			return targetPrice;
 		}
+
+		public (IReadOnlyCollection<(PortfolioStateEntry, decimal)>, decimal) GetLatestPortfolio() {
+			var brokers = State.Brokers.Items
+				.Select(b => b.Name)
+				.ToArray();
+			var latestAssets = brokers
+				.Select(b => {
+					var bp = State.Portfolio.Items
+						.Where(s => s.BrokerName == b)
+						.OrderByDescending(s => s.Date)
+						.FirstOrDefault();
+					if ( bp != null ) {
+						return State.Entries.Items
+							.Where(e => e.BrokerName == b && e.Date == bp.Date)
+							.ToArray();
+					}
+					return Array.Empty<PortfolioStateEntry>();
+				})
+				.SelectMany(e => e)
+				.ToArray();
+			var totalPrice = GetConvertedPrice(latestAssets);
+			var assetsWithPrice = latestAssets
+				.Select(a => (a, GetConvertedPrice(a)))
+				.ToArray();
+			return (assetsWithPrice, totalPrice);
+		}
+
+		public IReadOnlyCollection<(PortfolioStateEntry, decimal)> GetAssetsForTag(
+			IReadOnlyCollection<(PortfolioStateEntry, decimal)> assets, string tag) =>
+			assets
+				.Where(p => {
+					var (e, _) = p;
+					return State.AssetTags.Items.Any(t => t.Isin == e.Isin && t.Tags.Items.Contains(tag));
+				})
+				.ToArray();
 
 		async Task<bool> TryImportStateReport(BrokerState broker, string reportPath) {
 			_logger.WriteLine($"Importing state '{reportPath}' for broker '{broker.Name}'");

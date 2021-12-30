@@ -113,34 +113,13 @@ namespace InvestmentAnalyzer.DesktopClient.ViewModels {
 		}
 
 		void UpdateSelectedGroupPortfolio() {
-			var brokers = _manager.State.Brokers.Items
-				.Select(b => b.Name)
-				.ToArray();
-			var latestAssets = brokers
-				.Select(b => {
-					var bp = _manager.State.Portfolio.Items
-						.Where(s => s.BrokerName == b)
-						.OrderByDescending(s => s.Date)
-						.FirstOrDefault();
-					if ( bp != null ) {
-						return _manager.State.Entries.Items
-							.Where(e => e.BrokerName == b && e.Date == bp.Date)
-							.ToArray();
-					}
-					return Array.Empty<PortfolioStateEntry>();
-				})
-				.SelectMany(e => e)
-				.ToArray();
+			var (latestAssets, totalPrice) = _manager.GetLatestPortfolio();
 			SelectedGroupPortfolio.Clear();
-			var totalPrice = GetNormalizedPrice(latestAssets);
 			foreach ( var groupEntry in _selectedGroupRawEntries ) {
 				var tag = groupEntry.Tag;
-				var assetsForTag = latestAssets
-					.Where(e =>
-						_manager.State.AssetTags.Items.Any(t => t.Isin == e.Isin && t.Tags.Items.Contains(tag)))
-					.ToArray();
+				var assetsForTag = _manager.GetAssetsForTag(latestAssets, tag);
 				var target = groupEntry.Target;
-				var price = GetNormalizedPrice(assetsForTag);
+				var price = assetsForTag.Sum(p => p.Item2);
 				var actualRatio = Math.Round(totalPrice > 0 ? price / totalPrice * 100 : 0, 2);
 				var diff = actualRatio - target;
 				SelectedGroupPortfolio.Add(new() {
@@ -149,13 +128,9 @@ namespace InvestmentAnalyzer.DesktopClient.ViewModels {
 					Target = target,
 					ActualRatio = actualRatio,
 					Diff = diff,
-					Assets = assetsForTag.Length
+					Assets = assetsForTag.Count
 				});
 			}
 		}
-
-		decimal GetNormalizedPrice(IReadOnlyCollection<PortfolioStateEntry> entries) =>
-			entries
-				.Sum(e => _manager.GetConvertedPrice(e.Currency, e.TotalPrice, e.Date));
 	}
 }
