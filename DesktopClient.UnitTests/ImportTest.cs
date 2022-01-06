@@ -11,6 +11,13 @@ namespace DesktopClient.UnitTests {
 			var result = StateImporter.LoadStateByFormat(stream, "AlphaDirectMyPortfolio");
 			result.Success.Should().BeTrue(string.Join("\n", result.Errors));
 		}
+		
+		[Test]
+		public void IsTinkoffStateImported() {
+			using var stream = LoadFileOrIgnore("TinkoffState.pdf");
+			var result = StateImporter.LoadStateByFormat(stream, "TinkoffMyAssets");
+			result.Success.Should().BeTrue(string.Join("\n", result.Errors));
+		}
 
 		[Test]
 		public void IsAlphaDirectOperationsImportedOldFormat() {

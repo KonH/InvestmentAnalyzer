@@ -129,7 +129,7 @@ let processAsset infoLines assetLine =
     let countStr = assetLine.[countIndex]
     let pricePerUnitParts = assetLine.[assetLine.Length - 2].Split()
     let totalPriceParts = assetLine.[assetLine.Length - 1].Split()
-    let currency = pricePerUnitParts.[1]
+    let currency = if pricePerUnitParts.Length > 1 then pricePerUnitParts.[1] else "USD"
     lookupInfoLine infoLines assetType code
     |> Result.bind (createEntry currency)
     |> Result.bind (addCount countStr)
