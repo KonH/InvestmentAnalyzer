@@ -20,25 +20,29 @@ namespace DesktopClient.Services {
 
 		public async Task<StateImporter.ImportResult> LoadStateByFormat(string reportPath, string stateFormat) {
 			await TryRefreshCache();
-			if ( _cache.States.TryGetValue(reportPath, out var result) ) {
+			if ( _cache.States.TryGetValue(reportPath, out var result) && result.Success ) {
 				return result;
 			}
 			var stream = await TryLoadReport(reportPath);
 			result = StateImporter.LoadStateByFormat(stream, stateFormat);
-			_cache.States.Add(reportPath, result);
-			await SaveCache();
+			if ( result.Success ) {
+				_cache.States[reportPath] = result;
+				await SaveCache();
+			}
 			return result;
 		}
 
 		public async Task<OperationImporter.ImportResult> LoadOperationsByFormat(string reportPath, string operationsFormat) {
 			await TryRefreshCache();
-			if ( _cache.Operations.TryGetValue(reportPath, out var result) ) {
+			if ( _cache.Operations.TryGetValue(reportPath, out var result) && result.Success ) {
 				return result;
 			}
 			var stream = await TryLoadReport(reportPath);
 			result = OperationImporter.LoadOperationsByFormat(stream, operationsFormat);
-			_cache.Operations.Add(reportPath, result);
-			await SaveCache();
+			if ( result.Success ) {
+				_cache.Operations[reportPath] = result;
+				await SaveCache();
+			}
 			return result;
 		}
 
