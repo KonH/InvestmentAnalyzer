@@ -31,7 +31,7 @@ let optionToResult error option =
     | None _ -> Error error
 
 let tryParseDecimal (str: string) =
-    match Decimal.TryParse(str) with
+    match Decimal.TryParse(str, NumberStyles.AllowDecimalPoint ||| NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture) with
     | true, v -> Ok v
     | _ -> Error [$"Failed to parse decimal from '{str}'"]
 

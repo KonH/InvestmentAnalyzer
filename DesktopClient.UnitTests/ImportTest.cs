@@ -6,6 +6,13 @@ using NUnit.Framework;
 namespace DesktopClient.UnitTests {
 	public class ImportTest {
 		[Test]
+		public void IsAlphaDirectStateImported() {
+			using var stream = LoadFileOrIgnore("AlphaDirectState.xml");
+			var result = StateImporter.LoadStateByFormat(stream, "AlphaDirectMyPortfolio");
+			result.Success.Should().BeTrue(string.Join("\n", result.Errors));
+		}
+
+		[Test]
 		public void IsAlphaDirectOperationsImportedOldFormat() {
 			using var stream = LoadFileOrIgnore("AlphaDirectOperations_Old.xml");
 			var result = OperationImporter.LoadOperationsByFormat(stream, "AlphaDirectMoneyMove");
