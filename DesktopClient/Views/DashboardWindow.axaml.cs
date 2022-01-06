@@ -37,6 +37,8 @@ namespace InvestmentAnalyzer.DesktopClient.Views {
 					ShowWindow<ImportStateManagementWindow, ImportStateManagementWindowViewModel>(() => new(StateManager)));
 				vm.ShowImportOperationsManagementWindow.RegisterHandler(
 					ShowWindow<ImportOperationsManagementWindow, ImportOperationsManagementWindowViewModel>(() => new(StateManager)));
+				vm.ShowAssetAnalyzeWindow.RegisterHandler(
+					ShowWindow<AssetAnalyzeWindow, AssetAnalyzeWindowViewModel>(() => new(StateManager)));
 			});
 		}
 

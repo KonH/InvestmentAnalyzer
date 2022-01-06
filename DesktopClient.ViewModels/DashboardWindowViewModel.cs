@@ -17,6 +17,7 @@ namespace InvestmentAnalyzer.DesktopClient.ViewModels {
 		public ReactiveCommand ShowGroups { get; }
 		public ReactiveCommand ShowImportState { get; }
 		public ReactiveCommand ShowImportOperations { get; }
+		public ReactiveCommand ShowAssetAnalyze { get; }
 		public ReactiveCommand ClearLog { get; }
 
 		public ReactiveProperty<string> LogText { get; }
@@ -30,6 +31,7 @@ namespace InvestmentAnalyzer.DesktopClient.ViewModels {
 		public Interaction<Unit, Unit> ShowGroupManagementWindow { get; } = new();
 		public Interaction<Unit, Unit> ShowImportStateManagementWindow { get; } = new();
 		public Interaction<Unit, Unit> ShowImportOperationsManagementWindow { get; } = new();
+		public Interaction<Unit, Unit> ShowAssetAnalyzeWindow { get; } = new();
 
 		public DashboardWindowViewModel(): this(new StateManager()) {}
 
@@ -42,6 +44,7 @@ namespace InvestmentAnalyzer.DesktopClient.ViewModels {
 			ShowGroups = BindToWindow(ShowGroupManagementWindow);
 			ShowImportState = BindToWindow(ShowImportStateManagementWindow);
 			ShowImportOperations = BindToWindow(ShowImportOperationsManagementWindow);
+			ShowAssetAnalyze = BindToWindow(ShowAssetAnalyzeWindow);
 			LogText = new ReactiveProperty<string>(string.Join('\n', manager.LogLines));
 			ClearLog = new ReactiveCommand();
 			ClearLog

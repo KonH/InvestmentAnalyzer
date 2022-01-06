@@ -57,5 +57,21 @@
       <DependentUpon>AddGroupEntryWindow.axaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="Views\AssetAnalyzeWindow.axaml.cs">
+      <DependentUpon>AssetAnalyzeWindow.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\AddAssetSizeAnalyzerWindow.axaml.cs">
+      <DependentUpon>AddAssetSizeAnalyzerWindow.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\AddGroupSizeAnalyzerWindow.axaml.cs">
+      <DependentUpon>AddGroupSizeAnalyzerWindow.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\AddAnalyzerWindow.axaml.cs">
+      <DependentUpon>AddAnalyzerWindow.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
 </Project>

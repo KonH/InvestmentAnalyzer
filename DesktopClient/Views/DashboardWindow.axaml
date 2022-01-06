@@ -22,6 +22,7 @@
         <Button Command="{Binding ShowGroups}">Groups</Button>
         <Button Command="{Binding ShowImportState}">Import State</Button>
         <Button Command="{Binding ShowImportOperations}">Import Operations</Button>
+        <Button Command="{Binding ShowAssetAnalyze}">Analyze Assets</Button>
         <Button Command="{Binding ClearLog}">Clear Log</Button>
         <Label>Log:</Label>
         <TextBox IsReadOnly="True" Text="{Binding LogText.Value}" MaxHeight="200"></TextBox>

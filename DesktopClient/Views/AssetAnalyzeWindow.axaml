@@ -1,0 +1,50 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:viewModels="clr-namespace:InvestmentAnalyzer.DesktopClient.ViewModels;assembly=DesktopClient.ViewModels"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="InvestmentAnalyzer.DesktopClient.Views.AssetAnalyzeWindow"
+        Title="Asset Analyze">
+
+    <Design.DataContext>
+        <viewModels:AssetAnalyzeWindowViewModel/>
+    </Design.DataContext>
+
+    <StackPanel Spacing="5" Margin="10">
+        <ItemsControl Items="{Binding Analyzers}">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Margin="0 10 0 10" Spacing="5">
+                        <StackPanel Orientation="Horizontal" Spacing="5">
+                            <TextBlock FontWeight="Bold" VerticalAlignment="Center" Text="{Binding Type}"></TextBlock>
+                            <Button Command="{Binding RemoveEntry}">Remove</Button>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Spacing="5">
+                            <TextBlock VerticalAlignment="Center">Weight:</TextBlock>
+                            <TextBox Text="{Binding Weight.Value}"></TextBox>
+                        </StackPanel>
+                    </StackPanel>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center" />
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+        </ItemsControl>
+        <Button Command="{Binding AddAnalyzer}">Add analyzer</Button>
+        <DataGrid Items="{Binding LatestPortfolio}" AutoGenerateColumns="False" Height="600">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Brokers" Binding="{Binding BrokerNames}"></DataGridTextColumn>
+                <DataGridTextColumn Header="ISIN" Binding="{Binding Isin}"></DataGridTextColumn>
+                <DataGridTextColumn Header="Name" Binding="{Binding Name}"></DataGridTextColumn>
+                <DataGridTextColumn Header="Currency" Binding="{Binding  Currency}"></DataGridTextColumn>
+                <DataGridTextColumn Header="TotalCount" Binding="{Binding TotalCount}"></DataGridTextColumn>
+                <DataGridTextColumn Header="TotalPrice (RUB)" Binding="{Binding  TotalPrice}"></DataGridTextColumn>
+                <DataGridTextColumn Header="Score" Binding="{Binding  Score}"></DataGridTextColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+    </StackPanel>
+
+</Window>

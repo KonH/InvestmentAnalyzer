@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -72,6 +74,11 @@ namespace InvestmentAnalyzer.DesktopClient.Services {
 				var entries = groupEntries
 					.Select(p => new GroupStateEntry(group, p.Key, p.Value));
 				State.GroupEntries.AddRange(entries);
+			}
+			foreach ( var (id, (type, argument, weight)) in _manifest.Analyzers ) {
+				State.Analyzers.Add(new (id, type, argument) {
+					Weight = weight
+				});
 			}
 			await SaveManifest();
 			await SaveStartup();
@@ -331,6 +338,105 @@ namespace InvestmentAnalyzer.DesktopClient.Services {
 				groupEntries.Remove(tag);
 				await SaveManifest();
 			}
+		}
+
+		public async Task AddAnalyzer(AnalyzerState analyzer) {
+			State.Analyzers.Add(analyzer);
+			AssertManifest();
+			_manifest.Analyzers.Add(analyzer.Id, new(analyzer.Type, analyzer.Argument, analyzer.Weight));
+			await SaveManifest();
+		}
+
+		public async Task UpdateAnalyzer(string id, decimal weight) {
+			var analyzer = State.Analyzers.Items.FirstOrDefault(a => a.Id == id);
+			if ( analyzer == null ) {
+				return;
+			}
+			analyzer.Weight = weight;
+			AssertManifest();
+			_manifest.Analyzers[analyzer.Id] = new(analyzer.Type, analyzer.Argument, weight);
+			await SaveManifest();
+		}
+		
+		public async Task RemoveAnalyzer(string id) {
+			var analyzers = State.Analyzers.Items.Where(a => a.Id == id);
+			State.Analyzers.RemoveMany(analyzers);
+			AssertManifest();
+			_manifest.Analyzers.Remove(id);
+			await SaveManifest();
+		}
+
+		public void RefreshAnalyze() {
+			EnsureAssetTags();
+			State.AnalyzeEntries.Clear();
+			var (latestPortfolio, totalPrice) = GetLatestPortfolio();
+			var latestPortfolioGroups = latestPortfolio
+				.GroupBy(e => e.Item1.Isin);
+			foreach ( var group in latestPortfolioGroups ) {
+				var isin = group.Key;
+				var groupEntries = group.ToArray();
+				var brokerNames = string.Join(", ", groupEntries.Select(e => e.Item1.BrokerName));
+				var entry = groupEntries[0].Item1;
+				var name = entry.Name;
+				var currency = entry.Currency;
+				var totalCount = groupEntries.Sum(e => e.Item1.Count);
+				var groupPrice = groupEntries.Sum(e => e.Item2);
+				var score = GetAnalyzeScore(isin, totalPrice, groupPrice, latestPortfolio);
+				var analyzeEntry = new PortfolioAnalyzeEntry(
+					brokerNames, isin, name, currency, totalCount, groupPrice, score);
+				State.AnalyzeEntries.Add(analyzeEntry);
+			}
+		}
+
+		decimal GetAnalyzeScore(string isin, decimal totalPrice, decimal entryPrice, IReadOnlyCollection<(PortfolioStateEntry, decimal)> allEntries) {
+			var score = State.Analyzers.Items
+				.Sum(analyzer => GetAnalyzerScore(analyzer, isin, totalPrice, entryPrice, allEntries) * analyzer.Weight);
+			return Math.Round(score, 4);
+		}
+
+		decimal GetAnalyzerScore(AnalyzerState analyzer, string isin, decimal totalPrice, decimal entryPrice, IReadOnlyCollection<(PortfolioStateEntry, decimal)> allEntries) {
+			return analyzer.Type switch {
+				Analyzers.AssetSize => GetAssetSizeScore(analyzer, totalPrice, entryPrice),
+				Analyzers.GroupSize => GetGroupSizeScore(analyzer, isin, totalPrice, allEntries),
+				_ => throw new InvalidEnumArgumentException(analyzer.Type)
+			};
+		}
+
+		decimal GetAssetSizeScore(AnalyzerState analyzer, decimal totalPrice, decimal entryPrice) {
+			var currentRatio = totalPrice != 0 ? entryPrice / totalPrice : 0;
+			var requiredRatio = decimal.Parse(analyzer.Argument, NumberStyles.Any, CultureInfo.InvariantCulture) / totalPrice;
+			return currentRatio != 0 ? requiredRatio / currentRatio : 0;
+		}
+
+		decimal GetGroupSizeScore(AnalyzerState analyzer, string isin, decimal totalPrice, IReadOnlyCollection<(PortfolioStateEntry, decimal)> allEntries) {
+			var tagState = State.AssetTags.Items.FirstOrDefault(it => it.Isin == isin);
+			if ( tagState == null ) {
+				return 0;
+			}
+			var groupEntries = State.GroupEntries.Items
+				.Where(e => e.Group == analyzer.Argument)
+				.ToArray();
+			var groupTargetSum = groupEntries.Sum(e => e.Target);
+			var score = 0m;
+			foreach ( var tag in tagState.Tags.Items ) {
+				var targetEntry = groupEntries.FirstOrDefault(g => g.Tag == tag);
+				if ( targetEntry == null ) {
+					continue;
+				}
+				var tagPrice = allEntries
+					.Sum(e => {
+						var otherIsin = e.Item1.Isin;
+						var otherTagState = State.AssetTags.Items.FirstOrDefault(it => it.Isin == otherIsin);
+						if ( (otherTagState == null) || !otherTagState.Tags.Items.Contains(tag) ) {
+							return 0m;
+						}
+						return e.Item2;
+					});
+				var currentRatio = totalPrice != 0 ? tagPrice / totalPrice : 0;
+				var requiredRatio = targetEntry.Target / groupTargetSum;
+				score += requiredRatio / currentRatio;
+			}
+			return score;
 		}
 
 		bool IsTargetGroupEntry(GroupStateEntry entry, string group, string tag) =>

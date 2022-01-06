@@ -13,5 +13,7 @@ namespace InvestmentAnalyzer.State {
 		public SourceList<AssetTagState> AssetTags { get; } = new();
 		public SourceList<GroupState> Groups { get; } = new();
 		public SourceList<GroupStateEntry> GroupEntries { get; } = new();
+		public SourceList<AnalyzerState> Analyzers { get; } = new();
+		public SourceList<PortfolioAnalyzeEntry> AnalyzeEntries { get; } = new();
 	}
 }

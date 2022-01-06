@@ -7,5 +7,6 @@ namespace InvestmentAnalyzer.State.Persistant {
 		public List<string> Tags { get; set; } = new();
 		public Dictionary<string, List<string>> AssetTags { get; set; } = new();
 		public Dictionary<string, Dictionary<string, decimal>> Groups { get; set; } = new();
+		public Dictionary<string, AnalyzerData> Analyzers { get; set; } = new();
 	}
 }

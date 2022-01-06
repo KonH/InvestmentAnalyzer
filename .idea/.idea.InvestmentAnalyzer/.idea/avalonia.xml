@@ -4,9 +4,13 @@
     <option name="projectPerEditor">
       <map>
         <entry key="DesktopClient/App.axaml" value="DesktopClient/DesktopClient.csproj" />
+        <entry key="DesktopClient/Views/AddAnalyzerWindow.axaml" value="DesktopClient/DesktopClient.csproj" />
+        <entry key="DesktopClient/Views/AddAssetSizeAnalyzerWindow.axaml" value="DesktopClient/DesktopClient.csproj" />
         <entry key="DesktopClient/Views/AddBrokerWindow.axaml" value="DesktopClient/DesktopClient.csproj" />
         <entry key="DesktopClient/Views/AddGroupEntryWindow.axaml" value="DesktopClient/DesktopClient.csproj" />
+        <entry key="DesktopClient/Views/AddGroupSizeAnalyzerWindow.axaml" value="DesktopClient/DesktopClient.csproj" />
         <entry key="DesktopClient/Views/AddGroupWindow.axaml" value="DesktopClient/DesktopClient.csproj" />
+        <entry key="DesktopClient/Views/AssetAnalyzeWindow.axaml" value="DesktopClient/DesktopClient.csproj" />
         <entry key="DesktopClient/Views/AssetPlotWindow.axaml" value="DesktopClient/DesktopClient.csproj" />
         <entry key="DesktopClient/Views/AssetStatePlotWindow.axaml" value="DesktopClient/DesktopClient.csproj" />
         <entry key="DesktopClient/Views/AssetStateWindow.axaml" value="DesktopClient/DesktopClient.csproj" />
